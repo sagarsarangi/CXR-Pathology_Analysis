@@ -1,0 +1,41 @@
+# --- Core Project Ignores ---
+.env
+.env.local
+.env.*.local
+models/
+*.ipynb
+*.pth
+*.pt
+notebooks/
+*.ipynb
+
+# --- Python / Backend ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.pytest_cache/
+backend/__pycache__/
+
+# --- Node / Frontend ---
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+build/
+.vercel
+*.log
+
+# --- System / OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Tool Specific ---
+.gemini/
+.agents/
+MEMORY.md
+GEMINI.md
+FULL_PROJECT_BRIEF.md
