@@ -23,12 +23,6 @@ CONDITION_COLORS_RGB = {
     'No Finding':        (200, 200, 200)
 }
 
-def enable_dropout(model):
-    """Enable dropout layers at test time for MC Dropout."""
-    for m in model.modules():
-        if isinstance(m, torch.nn.Dropout):
-            m.train()
-
 def run_densenet_inference(model, img_tensor, original_img_pil, label_cols, prob_thresholds, cam_thresholds):
     """Run full DenseNet inference pipeline."""
     model.eval()
@@ -38,21 +32,7 @@ def run_densenet_inference(model, img_tensor, original_img_pil, label_cols, prob
         logits = model(img_tensor)
         probs = torch.sigmoid(logits)[0].cpu().numpy()
     
-    # 2. MC Dropout Uncertainty (Section 10)
-    enable_dropout(model)
-    mc_preds = []
-    n_passes = 20
-    with torch.no_grad():
-        for _ in range(n_passes):
-            mc_out = torch.sigmoid(model(img_tensor))
-            mc_preds.append(mc_out.cpu().numpy())
-    
-    mc_preds = np.array(mc_preds)
-    mc_mean = mc_preds.mean(axis=0)[0]
-    mc_std = mc_preds.std(axis=0)[0]
-    model.eval() # Back to pure eval
-    
-    # 3. Process Results
+    # 2. Process Results
     results = {}
     positive_conditions = []
     for i, label in enumerate(label_cols):
@@ -64,11 +44,10 @@ def run_densenet_inference(model, img_tensor, original_img_pil, label_cols, prob
             
         results[label] = {
             "prob": round(prob, 4),
-            "positive": is_positive,
-            "uncertainty": f"{mc_mean[i]*100:.1f}% ± {mc_std[i]*100:.1f}%"
+            "positive": is_positive
         }
     
-    # 4. GradCAM & Visualization
+    # 3. GradCAM & Visualization
     original_np = pil_to_numpy(original_img_pil)
     heatmaps = {}
     

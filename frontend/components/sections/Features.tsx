@@ -7,26 +7,34 @@ import { cn } from "@/lib/utils";
 
 const FEATURES = [
   {
-    tag: "01 — Intelligence",
-    title: "Logic That\nWorks For You",
-    description: "Harness the power of generative AI to automate the complex, surface the insight, and move faster than ever before.",
+    tag: "01 — Classification",
+    title: "Neural Disease\nIdentification",
+    description: "Our custom DenseNet-121 architecture performs multi-label classification across 14 clinical conditions, providing high-precision confidence scores for each finding.",
     bg: "bg-[#050505]",
     text: "text-white",
     accent: "text-white",
   },
   {
-    tag: "02 — Integration",
-    title: "Built for the Way\nYou Actually Work",
-    description: "Seamlessly fits into your existing workflow — no steep learning curve, no friction, just results from day one.",
+    tag: "02 — Explainability",
+    title: "Explainable AI\nLocalization",
+    description: "Leverage Grad-CAM attention heatmaps to visualize the neural networks focal point. Gain deep insight into the diagnostic rationale through pixel-level localization.",
     bg: "bg-[#111111]",
     text: "text-white",
     accent: "text-white",
   },
   {
-    tag: "03 — Velocity",
-    title: "From Prompt to\nOutcome, Instantly",
-    description: "Turn ideas into outputs in seconds. Whatever you're building toward, AI gets you there faster.",
+    tag: "03 — Detection",
+    title: "Precision YOLOv8\nDiagnostics",
+    description: "Combined with classification, our YOLOv8 pipeline provides precise bounding box detection for critical conditions, ensuring dual-model verification.",
     bg: "bg-[#050505]",
+    text: "text-white",
+    accent: "text-white",
+  },
+  {
+    tag: "04 — NLP (Coming Soon)",
+    title: "Automated Report\nSynthesis",
+    description: "The next phase of CheXVision: generating structured, clinical-grade radiology reports using advanced Large Language Models tailored for medical imaging.",
+    bg: "bg-[#111111]",
     text: "text-white",
     accent: "text-white",
   },
@@ -57,7 +65,7 @@ export default function Features() {
             });
           }
 
-          if (i < sections.length - 1) {
+          if (i < sections.length) {
             ScrollTrigger.create({
               trigger: section,
               start: "bottom bottom",
@@ -82,25 +90,26 @@ export default function Features() {
       {FEATURES.map((feature, i) => (
         <section key={i} className="feature-section relative h-screen w-full overflow-hidden">
           <div className={cn(
-            "feature-container relative h-full w-full p-8 md:p-20 flex flex-col justify-between border-t border-white/5",
+            "feature-container relative h-full w-full p-6 sm:p-12 md:p-20 flex flex-col justify-center border-t border-white/5",
             feature.bg,
             feature.text
           )}>
-            <div className="flex flex-col gap-8">
-                <p className={cn("font-mono text-xs tracking-widest uppercase opacity-60", feature.accent)}>{feature.tag}</p>
-                <div className="h-px w-full bg-current opacity-20" />
-                <h2 className="font-sans font-bold text-5xl md:text-8xl lg:text-9xl leading-[0.85] tracking-tighter uppercase whitespace-pre-line">
-                    {feature.title}
-                </h2>
-            </div>
+            <div className="max-w-7xl mx-auto w-full flex flex-col gap-10 md:gap-24">
+                <div className="flex flex-col gap-4 md:gap-6">
+                    <p className={cn("font-mono text-[10px] md:text-xs tracking-[0.2em] uppercase opacity-60", feature.accent)}>{feature.tag}</p>
+                    <div className="h-px w-full bg-current opacity-20" />
+                    <h2 className="font-sans font-bold text-3xl sm:text-5xl md:text-7xl lg:text-9xl leading-[1.3] tracking-tight md:tracking-tighter uppercase break-words">
+                        {feature.title.replace('\n', ' ')}
+                    </h2>
+                </div>
 
-            <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-                <div className="h-px w-full bg-current opacity-20 md:hidden" />
-                <p className="font-sans text-lg md:text-2xl max-w-xl opacity-70 leading-relaxed">
-                    {feature.description}
-                </p>
-                <div className="font-mono text-xs opacity-40 uppercase tracking-widest hidden md:block">
-                    Neuro // v1.0.42
+                <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+                    <p className="font-sans text-base sm:text-lg md:text-2xl max-w-2xl opacity-70 leading-relaxed md:leading-normal">
+                        {feature.description}
+                    </p>
+                    <div className="font-mono text-[10px] opacity-40 uppercase tracking-widest hidden md:block shrink-0">
+                        Neuro // v1.0.42
+                    </div>
                 </div>
             </div>
           </div>

@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 interface Prediction {
   prob: number;
   positive: boolean;
-  uncertainty: string;
 }
 
 interface Finding {
