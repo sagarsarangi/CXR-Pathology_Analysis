@@ -8,20 +8,30 @@ import { cn } from "@/lib/utils";
 const PROTOCOLS = [
   {
     num: "01",
-    title: "Synaptic Ingestion",
-    description: "Map your existing data architecture into a high-dimensional neural vector space. We don't just store; we understand structure.",
+    title: "Neural Classification",
+    description:
+      "Deep ensemble analysis using custom DenseNet architecture. 15 simultaneous disease labels identified with high-precision confidence scoring.",
     animation: "motif",
   },
   {
     num: "02",
-    title: "Quantum Synthesis",
-    description: "Apply massive-scale recursive inference to identify cross-domain patterns. Turn raw signal into actionable intelligence.",
+    title: "Explainable Evidence",
+    description:
+      "GradCAM localization maps provide visual accountability. We don't just predict; we show the precise anatomical features driving the AI's logic.",
     animation: "waveform",
   },
   {
     num: "03",
-    title: "Syndicated Action",
-    description: "Deploy insights across your entire stack with zero-latency neural bridging. Real results, delivered where you work.",
+    title: "NLP Report Gen",
+    description:
+      "Coming Soon: Automated radiology report synthesis. Advanced language models translate visual findings into standardized medical narratives.",
+    animation: "dataStream",
+  },
+  {
+    num: "04",
+    title: "Object Localization",
+    description:
+      "Multi-model verification with YOLOv8. Bounding box detections cross-reference visual patterns for verified clinical localization.",
     animation: "laser",
   },
 ];
@@ -76,6 +86,7 @@ export default function Protocol() {
             {protocol.animation === "motif" && <MotifAnimation />}
             {protocol.animation === "waveform" && <WaveformAnimation />}
             {protocol.animation === "laser" && <LaserAnimation />}
+            {protocol.animation === "dataStream" && <DataStreamAnimation />}
           </div>
 
           <div className="relative z-10 max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -134,8 +145,96 @@ function MotifAnimation() {
   );
 }
 
+function DataStreamAnimation() {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const ringRef = useRef<SVGCircleElement>(null);
+  const nodesRef = useRef<(SVGCircleElement | null)[]>([]);
+
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      // Rotate the entire data ring
+      gsap.to(svgRef.current, {
+        rotation: -300,
+        duration: 70,
+        repeat: -1,
+        ease: "none",
+      });
+
+      // Pulse the connection nodes
+      nodesRef.current.forEach((node, i) => {
+        if (!node) return;
+        gsap.to(node, {
+          opacity: 0.6,
+          r: 1.5,
+          duration: 1 + (i % 3) * 0.5,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: i * 0.3,
+        });
+      });
+
+      // Animate the dashed ring
+      gsap.to(ringRef.current, {
+        strokeDashoffset: 100,
+        duration: 100,
+        repeat: -1,
+        ease: "none",
+      });
+    });
+
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(nodesRef.current, { opacity: 0.5, r: 1 });
+    });
+  }, { scope: svgRef });
+
+  return (
+    <svg ref={svgRef} width="600" height="600" viewBox="0 0 100 100" className="text-accent/20">
+      <circle 
+        ref={ringRef}
+        cx="50" 
+        cy="50" 
+        r="50" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="0.5" 
+        strokeDasharray="4 4" 
+      />
+      <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" strokeWidth="0.2" opacity="0.9" />
+      
+      {/* Symmetric connection nodes */}
+      {[...Array(16)].map((_, i) => {
+        const angle = (i * 360) / 16;
+        const x = 50 + 40 * Math.cos((angle * Math.PI) / 180);
+        const y = 50 + 40 * Math.sin((angle * Math.PI) / 180);
+        return (
+          <g key={i}>
+            <line 
+              x1="50" y1="50" x2={x} y2={y} 
+              stroke="currentColor" strokeWidth="0.1" opacity="0.8" 
+            />
+            <circle
+              ref={(el) => { nodesRef.current[i] = el; }}
+              cx={x}
+              cy={y}
+              r="1"
+              fill="currentColor"
+              className="opacity-80"
+            />
+          </g>
+        );
+      })}
+      <circle cx="50" cy="50" r="5" fill="currentColor" className="opacity-60" />
+    </svg>
+  );
+}
+
 function LaserAnimation() {
+  const svgRef = useRef<SVGSVGElement>(null);
   const lineRef = useRef<SVGLineElement>(null);
+  const rectRef = useRef<SVGRectElement>(null);
   const [cells, setCells] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
@@ -149,17 +248,36 @@ function LaserAnimation() {
   }, []);
 
   useGSAP(() => {
-    gsap.to(lineRef.current, {
-      attr: { y1: 100, y2: 100 },
-      duration: 4,
-      repeat: -1,
-      yoyo: true,
-      ease: "power2.inOut",
+    const mm = gsap.matchMedia();
+
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      // Sync the rect and line perfectly
+      // rect height is 4, so line should be at y + 2
+      gsap.to(rectRef.current, {
+        attr: { y: 96 },
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+      
+      gsap.to(lineRef.current, {
+        attr: { y1: 98, y2: 98 },
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
     });
-  });
+
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(rectRef.current, { attr: { y: 48 } });
+      gsap.set(lineRef.current, { attr: { y1: 50, y2: 50 } });
+    });
+  }, { scope: svgRef });
 
   return (
-    <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="text-accent/10">
+    <svg ref={svgRef} width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="text-accent/10">
       <defs>
         <linearGradient id="scanGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="currentColor" stopOpacity="0" />
@@ -175,35 +293,35 @@ function LaserAnimation() {
             key={i}
             x={cell.x}
             y={cell.y}
-            width="0.5"
-            height="0.5"
+            width="0.3"
+            height="0.3"
             fill="currentColor"
-            opacity={Math.random() * 0.5 + 0.2}
+            opacity={0.15}
           />
         ))}
       </g>
 
-      {/* Scanning Bar */}
+      {/* Scanning Bar - Narrower and aligned */}
       <rect
-        ref={lineRef}
+        ref={rectRef}
         x="0"
         y="0"
         width="100"
-        height="15"
+        height="4"
         fill="url(#scanGradient)"
-        className="text-accent/40"
+        className="text-accent/30"
       />
       
-      {/* Laser Core */}
+      {/* Laser Core - Perfectly centered in rect */}
       <line
         ref={lineRef}
         x1="0"
-        y1="0"
+        y1="2"
         x2="100"
-        y2="0"
+        y2="2"
         stroke="white"
-        strokeWidth="0.5"
-        className="opacity-50"
+        strokeWidth="0.2"
+        className="opacity-60"
       />
     </svg>
   );
@@ -217,36 +335,46 @@ function WaveformAnimation() {
       if (!path) return;
       gsap.to(path, {
         strokeDashoffset: 0,
-        duration: 3 + i,
+        duration: 4 + i,
         repeat: -1,
-        ease: "none",
-        delay: i * 0.5,
+        ease: "sine.inOut",
+        yoyo: true,
       });
     });
   });
 
   const generatePath = (offset: number) => {
-    let d = "M0 100 ";
-    for (let x = 0; x <= 800; x += 50) {
-      const y = 100 + Math.sin((x + offset) * 0.02) * 40;
-      d += `L${x} ${y} `;
+    const points = [];
+    const width = 800;
+    const height = 200;
+    const centerY = height / 2;
+    const amplitude = 50;
+    const frequency = 0.015;
+    
+    // Symmetric wave generation with higher resolution
+    for (let x = 0; x <= width; x += 5) {
+      // Use a bell-curve envelope for symmetry and smoothness at edges
+      const envelope = Math.sin((x / width) * Math.PI);
+      const y = centerY + Math.sin((x + offset) * frequency) * amplitude * envelope;
+      // Round to 3 decimal places to avoid hydration mismatch from float precision
+      points.push(`${x},${y.toFixed(3)}`);
     }
-    return d;
+    return `M${points.join(" L")}`;
   };
 
   return (
-    <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" className="text-accent/30 scale-150">
+    <svg width="100%" height="100%" viewBox="0 0 800 200" preserveAspectRatio="none" className="text-accent/40 scale-110">
       {[...Array(3)].map((_, i) => (
         <path
           key={i}
           ref={(el) => { pathsRef.current[i] = el; }}
-          d={generatePath(i * 100)}
+          d={generatePath(i * 150)}
           fill="none"
           stroke="currentColor"
-          strokeWidth={1 + i}
-          strokeDasharray="2000"
-          strokeDashoffset="2000"
-          opacity={0.8 - i * 0.2}
+          strokeWidth={0.5 + i * 0.5}
+          strokeDasharray="3000"
+          strokeDashoffset="3000"
+          opacity={0.7 - i * 0.15}
         />
       ))}
     </svg>

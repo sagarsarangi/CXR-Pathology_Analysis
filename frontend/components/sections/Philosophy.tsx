@@ -10,26 +10,35 @@ export default function Philosophy() {
   const text2Ref = useRef<HTMLHeadingElement>(null);
 
   useGSAP(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top 60%",
-        toggleActions: "play none none reverse",
-      },
+    const mm = gsap.matchMedia();
+
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 60%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      tl.fromTo(
+        text1Ref.current,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 0.5, duration: 1, ease: "power3.out" }
+      );
+
+      tl.fromTo(
+        text2Ref.current,
+        { y: 50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, ease: "power3.out" },
+        "-=0.6"
+      );
     });
 
-    tl.fromTo(
-      text1Ref.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 0.5, duration: 1, ease: "power3.out" }
-    );
-
-    tl.fromTo(
-      text2Ref.current,
-      { y: 50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1.2, ease: "power3.out" },
-      "-=0.6"
-    );
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(text1Ref.current, { y: 0, opacity: 0.5 });
+      gsap.set(text2Ref.current, { y: 0, opacity: 1 });
+    });
   }, { scope: containerRef });
 
   return (
@@ -45,17 +54,17 @@ export default function Philosophy() {
 
         <div className="relative z-10 max-w-6xl w-full space-y-12">
             <p ref={text1Ref} className="font-sans text-xl md:text-3xl text-white opacity-0 text-center md:text-left">
-                Most AI platforms focus on: <span className="underline underline-offset-8 decoration-white/10">Generative prediction.</span>
+                Most diagnostic AI systems focus on: <span className="underline underline-offset-8 decoration-white/10">Black-box prediction.</span>
             </p>
             
-            <h2 ref={text2Ref} className="font-sans text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tight text-center md:text-left opacity-0">
-                We focus on: <span className="font-drama italic text-white block md:inline mt-4 md:mt-0">Neural Resonance.</span>
+            <h2 ref={text2Ref} className="font-sans text-4xl md:text-7xl lg:text-8xl font-bold text-white leading-tigh text-center md:text-left opacity-0">
+                We focus on: <span className="font-drama italic text-white block md:inline mt-4 md:mt-0">Visual Evidence.</span>
             </h2>
         </div>
 
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-30">
             <div className="h-20 w-px bg-white animate-pulse" />
-            <span className="font-mono text-[10px] tracking-[0.5em] uppercase text-white">Manifesto // 01</span>
+            <span className="font-mono text-[10px] tracking-[0.5em] uppercase text-white">Vision // 01</span>
         </div>
     </section>
   );
