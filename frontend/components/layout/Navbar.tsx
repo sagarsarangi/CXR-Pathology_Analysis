@@ -92,7 +92,7 @@ export default function Navbar() {
   }, [scrolled]);
 
   const navLinks = [
-    { label: "Services", href: "/what-we-do" },
+    { label: "Performance", href: "/performance" },
     { label: "Solutions", href: "/what-we-can-do" },
   ];
 
