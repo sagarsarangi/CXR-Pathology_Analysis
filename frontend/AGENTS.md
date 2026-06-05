@@ -1,136 +1,125 @@
-# AGENTS.md — Neuro: Complete Technical Bible
+# Frontend AGENTS.md — Technical Reference
 
-> **This is the single source of truth for any agent, developer, or AI working on this codebase.**
-> Read it completely before writing a single line of code. It documents what is *actually here*, not what should be.
+> **Read this before touching any frontend code.**
+> This file documents what is *actually here* — the current state of the frontend, verified file by file.
+> Project-level context (model architecture, backend API, inference pipeline) lives in the root `AGENTS.md`.
 
 ---
 
-## 1. Project Overview
+## 1. What This Frontend Does
 
-**Brand:** Neuro (internally "Neuro Syndication Group")
-**Tagline:** "Understanding AI Revolution" / "Intelligence beyond Boundaries."
-**Purpose:** A cinematic, dark-aesthetic Next.js marketing site for an AI syndication platform. The site is publicly accessible for most pages, but includes full email/password authentication (Supabase) and a protected dashboard.
+A Next.js 16 (App Router, TypeScript, Tailwind CSS) medical AI web application that:
 
-### Core User Journey
-1. Visitor lands on `/` — sees a full-screen, animated hero section with stacked Unsplash imagery.
-2. Scrolls through Features (stacked full-screen cards with rotation-on-scroll), Philosophy (manifesto section), and Protocol (pinned stacking cards with embedded SVG animations).
-3. Navbar links lead to `/what-we-do` (methodology) and `/what-we-can-do` (capabilities) — both public.
-4. CTA button in hero/navbar routes to `/auth/signin` if unauthenticated, or `/dashboard` if authenticated.
-5. Authenticated user reaches `/dashboard` — a styled "System Terminal" page showing account info and a sign-out button.
-6. Email confirmation flow: sign-up triggers a Supabase confirmation email; clicking the link hits `/auth/callback`, which exchanges the code for a session and redirects to `/dashboard`.
+- Authenticates users via Supabase (email/password + email confirmation).
+- Protects the `/dashboard` route — unauthenticated users are redirected to `/auth/signin`.
+- On the dashboard, accepts a chest X-ray image via drag-and-drop or click-to-browse.
+- Posts the image to the FastAPI backend (`POST /predict`, `multipart/form-data`, field name `"file"`).
+- Renders the backend response: classified findings, GradCAM heatmaps, YOLO detection boxes, risk badge, and confidence scores.
 
 ---
 
 ## 2. Tech Stack — Exact Installed Versions
 
-All versions are from `package.json`. Do not upgrade without verifying compatibility across the stack.
+All versions are from `package.json`. Do not upgrade without verifying compatibility.
 
 | Package | Version | Role |
 |---|---|---|
-| `next` | `^16.2.6` | Framework — App Router. All routes live in `/app`. |
+| `next` | `^16.2.6` | Framework — App Router. All routes in `/app`. |
 | `react` | `^19.2.6` | UI library |
 | `react-dom` | `^19.2.6` | DOM renderer |
-| `gsap` | `^3.15.0` | **Only** animation library. No Framer Motion. Handles hero, page transitions, scroll reveals, all motion. |
-| `@gsap/react` | `^2.1.2` | Provides `useGSAP` hook for scoped, SSR-safe animations in React components. |
+| `gsap` | `^3.15.0` | **Only** animation library. No Framer Motion. |
+| `@gsap/react` | `^2.1.2` | `useGSAP` hook for scoped, SSR-safe animations. |
 | `lenis` | `^1.3.23` | Smooth scroll. Synced to GSAP ticker. |
-| `@supabase/ssr` | `^0.10.3` | Supabase SSR package — used for both browser client and server client. **Not** the deprecated `auth-helpers-nextjs`. |
-| `@supabase/supabase-js` | `^2.106.1` | Core Supabase JS SDK (Auth, DB types). |
-| `zod` | `^4.4.3` | Form schema validation. All auth form inputs pass through Zod before hitting Supabase. |
-| `zustand` | `^5.0.13` | Global client state. Owns auth state (`user`, `isLoading`). No Context API for this. |
-| `react-hook-form` | `^7.76.0` | Form state management in auth pages. Paired with `@hookform/resolvers` for Zod integration. |
-| `@hookform/resolvers` | `^5.2.2` | Bridges `react-hook-form` with Zod schemas via `zodResolver`. |
-| `lucide-react` | `^1.16.0` | Icons. Used for `Loader2`, `LogOut`, `User`, `Shield`, `Activity`, `Zap` in dashboard/auth. |
+| `@supabase/ssr` | `^0.10.3` | Supabase SSR package. **Not** `auth-helpers-nextjs`. |
+| `@supabase/supabase-js` | `^2.106.1` | Core Supabase JS SDK. |
+| `zod` | `^4.4.3` | Form schema validation. Auth forms pass through Zod. |
+| `zustand` | `^5.0.13` | Global client state — owns auth state (`user`, `isLoading`). |
+| `react-hook-form` | `^7.76.0` | Form state in auth pages. Paired with `@hookform/resolvers`. |
+| `@hookform/resolvers` | `^5.2.2` | Bridges `react-hook-form` with Zod via `zodResolver`. |
+| `lucide-react` | `^1.16.0` | Icons. Used across dashboard and auth pages. |
 | `tailwindcss` | `^3.4.17` | Utility-first CSS. Only styling system. No component CSS files. |
-| `autoprefixer` | `^10.5.0` | PostCSS plugin for vendor prefixes. |
+| `autoprefixer` | `^10.5.0` | PostCSS vendor prefix plugin. |
 | `postcss` | `^8.5.15` | CSS transformation pipeline. |
-| `clsx` | `^2.1.1` | Conditional class composition. Used via the `cn()` utility. |
-| `tailwind-merge` | `^3.6.0` | Merges conflicting Tailwind classes. Used via the `cn()` utility. |
+| `clsx` | `^2.1.1` | Conditional class composition via `cn()`. |
+| `tailwind-merge` | `^3.6.0` | Merges conflicting Tailwind classes via `cn()`. |
 | **Dev** | | |
 | `typescript` | `6.0.3` | Type checking. Strict mode enabled. |
 | `@types/node` | `25.9.1` | Node.js types |
 | `@types/react` | `19.2.15` | React types |
+| `cross-env` | `^10.1.0` | Cross-platform env var for the `dev` script |
 
-> **`package.json` `"type": "module"`** — the project uses ESM throughout. Import paths matter.
+> **`package.json` `"type": "module"`** — the project uses ESM throughout.
 
 ---
 
 ## 3. Project Structure — Annotated
 
 ```
-/
-├── AGENTS.md                    ← This file. The authoritative technical bible.
+frontend/
+├── AGENTS.md                    ← This file.
 ├── package.json                 ← Dependencies and scripts. ESM ("type": "module").
 ├── tsconfig.json                ← TypeScript config. Strict mode. Path alias: @/* → ./*
 ├── tailwind.config.ts           ← Design token system. Colors, fonts, border radii, animations.
 ├── postcss.config.mjs           ← PostCSS: tailwindcss + autoprefixer.
-├── next.config.ts               ← Next.js config. Allows Unsplash remote images. No source maps override.
+├── next.config.ts               ← Next.js config.
 ├── next-env.d.ts                ← Auto-generated Next.js TS references. Do not edit.
-├── .env.local                   ← ACTUAL secrets. Gitignored. See Section 4.
-├── .env.local.template          ← Safe to commit. Contains variable names only.
-├── .gitignore                   ← Covers .env, .env.local, .env.*.local, node_modules, .next.
+├── middleware.ts                ← Route protection. Guards /dashboard → /auth/signin.
+├── .env.local                   ← ACTUAL secrets. Gitignored.
+├── .env.local.template          ← Safe to commit. Variable names only.
 │
 ├── public/
-│   └── images/
-│       ├── philo.jpg            ← Local image used as parallax background in Philosophy section.
-│       └── ppl.jpg             ← Local image used as parallax texture in Philosophy section.
+│   └── images/                  ← Static image assets (if any).
 │
 ├── app/
-│   ├── globals.css              ← Tailwind directives + CSS custom props + global utilities. Nothing else.
-│   ├── layout.tsx               ← Root layout. Loads Google Fonts (Sora, Instrument Serif, Fira Code).
-│   │                               Mounts: AuthInitializer, LenisProvider, PageTransition, Navbar, Footer.
-│   ├── page.tsx                 ← Landing page /. Composes: Hero, Features, Philosophy, Protocol.
+│   ├── globals.css              ← Tailwind directives + CSS custom props + global utilities.
+│   ├── layout.tsx               ← Root layout. Mounts AuthInitializer, LenisProvider, PageTransition, Navbar, Footer.
+│   ├── page.tsx                 ← Landing/home page.
 │   │
 │   ├── auth/
-│   │   ├── layout.tsx           ← Auth shared layout. Centered card, glassmorphism panel.
+│   │   ├── layout.tsx           ← Auth shared layout. Centered card.
 │   │   ├── callback/
 │   │   │   └── route.ts         ← API route. Exchanges Supabase email-confirmation code for session.
 │   │   ├── signin/
-│   │   │   └── page.tsx         ← Sign-in form. react-hook-form + zodResolver + Supabase signInWithPassword.
+│   │   │   └── page.tsx         ← Sign-in form. react-hook-form + zodResolver + signInWithPassword.
 │   │   └── signup/
-│   │       └── page.tsx         ← Sign-up form. react-hook-form + zodResolver + Supabase signUp + email redirect.
+│   │       └── page.tsx         ← Sign-up form. react-hook-form + zodResolver + signUp + email redirect.
 │   │
 │   ├── dashboard/
-│   │   ├── layout.tsx           ← Client-side auth guard (second layer after middleware). Shows spinner while loading.
-│   │   └── page.tsx             ← Authenticated dashboard. StatCards + user info + sign-out button.
+│   │   ├── layout.tsx           ← Client-side auth guard (second layer after middleware).
+│   │   └── page.tsx             ← Main diagnostic UI. Upload zone + analysis results + image viewer.
 │   │
-│   ├── what-we-do/
-│   │   └── page.tsx             ← Public page /what-we-do. Methodology page. Hero + 3-column process grid.
+│   ├── performance/             ← Additional page (check page.tsx for content).
 │   │
 │   └── what-we-can-do/
-│       └── page.tsx             ← Public page /what-we-can-do. Capabilities page. Hero + stat grid + detail list.
+│       └── page.tsx             ← Public marketing/capabilities page.
 │
 ├── components/
 │   ├── layout/
-│   │   ├── AuthInitializer.tsx  ← Client component. Mounts at root. Listens to onAuthStateChange, writes to Zustand.
-│   │   ├── LenisProvider.tsx    ← Client wrapper. Calls useLenis() which creates Lenis + syncs to gsap.ticker.
-│   │   ├── Navbar.tsx           ← Fixed, pill-shaped nav. GSAP scroll morph. Hides over #features section.
-│   │   ├── PageTransition.tsx   ← GSAP curtain transition. 6 dark columns animate in/out on route change.
-│   │   │                           Provides TransitionContext + usePageTransition hook.
-│   │   └── Footer.tsx           ← Minimal footer. Copyright only.
+│   │   ├── AuthInitializer.tsx  ← Renders null. Syncs Supabase auth state to Zustand on mount.
+│   │   ├── LenisProvider.tsx    ← Activates Lenis smooth scroll (synced to gsap.ticker).
+│   │   ├── Navbar.tsx           ← Fixed nav. GSAP scroll morph. Hides over #features section.
+│   │   ├── PageTransition.tsx   ← GSAP curtain transition on route changes.
+│   │   └── Footer.tsx           ← Minimal footer.
 │   │
 │   ├── sections/
-│   │   ├── Hero.tsx             ← Stacked-image cinematic hero. GSAP timeline: clip-path reveal → expand → content fade.
-│   │   ├── Features.tsx         ← Three full-screen feature cards. GSAP: rotation-on-scroll + pinning without spacing.
-│   │   ├── Philosophy.tsx       ← Manifesto section. ScrollTrigger fade-up for two contrast statements.
-│   │   └── Protocol.tsx         ← Three full-screen pinned stacking cards. Scale/blur/fade on scroll. Three sub-animations.
+│   │   ├── Hero.tsx             ← Landing hero section. GSAP animations.
+│   │   ├── Features.tsx         ← Feature cards. GSAP scroll pinning + rotation.
+│   │   ├── Philosophy.tsx       ← Text-focused section. ScrollTrigger fade-up.
+│   │   └── Protocol.tsx         ← Pinned stacking cards with inline SVG animations.
 │   │
-│   └── ui/                      ← EMPTY. Reserved for future reusable UI primitives.
+│   └── ui/                      ← Reserved for future reusable UI primitives (currently empty).
 │
 ├── lib/
-│   ├── gsap.ts                  ← Registers ScrollTrigger + useGSAP plugins. Guard: only runs in browser (typeof window).
-│   ├── lenis.ts                 ← useLenis() hook. Creates Lenis instance, syncs to gsap.ticker, cleans up on unmount.
-│   ├── schemas.ts               ← signUpSchema + signInSchema Zod schemas. Exported types: SignUpInput, SignInInput.
+│   ├── gsap.ts                  ← Registers ScrollTrigger + useGSAP. SSR-guarded.
+│   ├── lenis.ts                 ← useLenis() hook. Creates Lenis + syncs to gsap.ticker.
+│   ├── schemas.ts               ← signUpSchema + signInSchema Zod schemas.
 │   ├── store.ts                 ← useAuthStore (Zustand). Shape: { user, isLoading, setUser, setLoading }.
 │   ├── utils.ts                 ← cn() helper. Merges clsx + tailwind-merge.
 │   └── supabase/
-│       ├── client.ts            ← createClient(). Browser-side Supabase. Uses createBrowserClient from @supabase/ssr.
-│       └── server.ts            ← createServerSupabaseClient(). Async. Uses cookies() from next/headers. Server-only.
+│       ├── client.ts            ← createClient(). Browser-side. Uses createBrowserClient.
+│       └── server.ts            ← createServerSupabaseClient(). Server-only. Uses cookies().
 │
-├── hooks/                       ← EMPTY. Reserved. No custom hooks have been created yet.
-│
-└── middleware.ts                ← Route protection. Runs on every non-static request.
-                                    Guards /dashboard (redirects to /auth/signin if no user).
-                                    Guards /auth/* (redirects to /dashboard if user exists).
+└── hooks/                       ← Reserved. No custom hooks yet (empty directory).
 ```
 
 ---
@@ -139,275 +128,116 @@ All versions are from `package.json`. Do not upgrade without verifying compatibi
 
 ### Required Variables
 
-Create `.env.local` in the project root (already gitignored):
+Create `.env.local` in the `frontend/` root (already gitignored):
 
 ```env
-# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGc...your-anon-key
+
+# Optional — defaults to http://localhost:8000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 ```
 
-**Both are public-prefixed (`NEXT_PUBLIC_`) because:**
-- The browser Supabase client (`lib/supabase/client.ts`) runs on the client and needs them.
-- The server client also reads them, but via `process.env` server-side.
-- The anon key is safe to expose — it is protected by Supabase Row Level Security (RLS) and is not a secret key.
+- Both `NEXT_PUBLIC_SUPABASE_*` vars are safe to expose — protected by Supabase RLS.
+- `NEXT_PUBLIC_BACKEND_URL` is the FastAPI backend origin. All `/predict` calls use this.
 
-**Where to get them:**
-1. Go to your [Supabase dashboard](https://app.supabase.com).
-2. Select your project → Settings → API.
-3. Copy "Project URL" → `NEXT_PUBLIC_SUPABASE_URL`.
-4. Copy "anon public" key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-
-### Running the Project
+### Running the Frontend
 
 ```bash
+# From the frontend/ directory
 npm install
-npm run dev      # Development server at http://localhost:3000
+npm run dev      # Dev server at http://localhost:3000
 npm run build    # Production build
 npm run start    # Production server
 npm run lint     # ESLint
 ```
 
+The backend must be running separately at `NEXT_PUBLIC_BACKEND_URL` for analysis to work.
+
 ---
 
-## 5. Frontend Architecture
+## 5. Dashboard — Core Feature (`app/dashboard/page.tsx`)
 
-### Layout Hierarchy
+This is the heart of the application. Understand this file completely before editing it.
 
+### Upload Zone
+
+- Accepts drag-and-drop or click-to-browse.
+- Validates: only `image/*` files accepted. Shows preview before submission.
+- On submit, sends `POST /predict` (`multipart/form-data`, field `"file"`) to the FastAPI backend.
+- Shows a loading/spinner state while awaiting response.
+- On error: displays error message to user.
+
+### Backend Integration
+
+```ts
+const formData = new FormData();
+formData.append("file", selectedFile);
+
+const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/predict`, {
+  method: "POST",
+  body: formData,
+});
+const data = await response.json();
 ```
-RootLayout (app/layout.tsx) — Server Component
-  └── <html lang="en" className="dark">
-        └── <body> — Font CSS variables applied here
-              ├── <AuthInitializer />          — Client, renders null, sets Zustand auth state
-              └── <LenisProvider>              — Client, initializes Lenis smooth scroll
-                    └── <PageTransition>       — Client, manages GSAP curtain transition
-                          ├── <div.noise-overlay />   — Fixed, full-screen, 5% opacity noise
-                          ├── <Navbar />       — Fixed nav
-                          ├── <main>           — Page content
-                          └── <Footer />
-```
 
-Every layout component except `RootLayout` and `AuthLayout` is a client component (`"use client"`).
+The response shape is fully documented in the root `AGENTS.md` → Section 10.
 
-### Font Loading
+### Image Viewer — Three View Modes
 
-Fonts are loaded via `next/font/google` in `app/layout.tsx`. Three fonts are loaded:
+Toggled via buttons after analysis completes:
 
-| Font | Variable | Tailwind class | Usage |
-|---|---|---|---|
-| `Sora` | `--font-sora` | `font-sans`, `font-display` | Body text, headings, nav |
-| `Instrument_Serif` (italic, weight 400) | `--font-instrument-serif` | `font-drama` | Dramatic serif italic in hero, philosophy, page heroes |
-| `Fira_Code` | `--font-fira-code` | `font-mono` | Monospace labels, overlines, data readouts |
-
-Font variables are injected onto `<body>` via `cn(sora.variable, instrumentSerif.variable, firaCode.variable, ...)`. Tailwind reads them via `var(--font-*)` in `tailwind.config.ts`.
-
-### Tailwind Design Token System (`tailwind.config.ts`)
-
-**Colors** (all semantic names):
-
-| Token | Value | Usage |
+| Mode | Source field | Description |
 |---|---|---|
-| `primary` | `#000000` | Pure black — main background color |
-| `accent` | `#FFFFFF` | White — CTAs, highlights, active states |
-| `background` | `#050505` | Deepest black — page background |
-| `foreground` | `#F5F5F5` | Off-white — primary text |
-| `surface` | `#111111` | Charcoal — card/panel backgrounds |
-| `muted` | `#888888` | Medium gray — secondary text, placeholders |
-| `border` | `#222222` | Subtle border — dividers |
+| **Raw** | `images.original_b64` | Original X-ray (or YOLO-annotated version) |
+| **Heatmap** | `images.heatmap_b64` | GradCAM overlay of the first positive condition |
+| **Detection** | `images.boxes_b64` | YOLO bounding boxes drawn on the image |
 
-**Global CSS variables** (`app/globals.css`):
-```css
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-}
-```
-These mirror the Tailwind tokens. `body` uses `var(--foreground)` and `var(--background)`.
+Images are rendered as: `<img src={`data:image/jpeg;base64,${b64}`} />`.
 
-**Custom font families** (Tailwind config):
-```ts
-fontFamily: {
-  sans:    ["var(--font-sora)", "ui-sans-serif", "system-ui"],
-  display: ["var(--font-sora)", "ui-sans-serif", "system-ui"],
-  drama:   ["var(--font-instrument-serif)", "serif"],
-  mono:    ["var(--font-fira-code)", "monospace"],
-}
-```
+> **Note:** `individual_heatmaps` (per-condition heatmaps) are available in the response. If you add a per-condition heatmap viewer, read from `images.individual_heatmaps[conditionName]`.
 
-**Border radii extensions:**
-```ts
-borderRadius: {
-  "3xl": "2rem",   // Used via .rounded-container → @apply rounded-[2rem] md:rounded-[3rem]
-  "4xl": "3rem",
-}
-```
+### Findings Panel
 
-**Custom animations:**
-```ts
-animation: {
-  "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-}
-```
+- Reads `confirmed_findings` array (NOT `differential_top3` — that field no longer exists).
+- Each finding displays: condition name, risk level badge, normalized confidence progress bar.
+- `normalized_conf` from the response drives the progress bar width (`0.0` to `1.0`).
+- Conditions are pre-sorted by raw probability descending in the backend response.
 
-### Global CSS (`app/globals.css`)
+### Object Detection Panel
 
-Contains exactly:
-1. Tailwind directives (`@tailwind base/components/utilities`)
-2. `:root` CSS custom property variables
-3. `body` base styles (color, background, font-family, `overflow-x: hidden`)
-4. `.noise-overlay` — Fixed, full-viewport, `z-index: 9999`, `pointer-events: none`, `opacity: 0.05`, `mix-blend-mode: overlay`
-5. `.will-change-transform` and `.will-change-opacity` — utility classes for GSAP-animated elements
-6. `.rounded-container` — `@apply rounded-[2rem] md:rounded-[3rem]` — the global container rounding system
-7. `.btn-magnetic` — `@apply relative overflow-hidden transition-transform duration-300` — base for magnetic button effect (GSAP handles the actual scale)
+- Reads `yolo_boxes` array: `[{ class, conf, xyxy }]`.
+- Each box shows class name and raw YOLO confidence.
 
-**Nothing else goes in globals.css. No per-component styles. No additional keyframes.**
+### Risk Badge
 
-### Responsive Strategy
+- Reads `risk_level` from the top-level response.
+- Values: `CRITICAL` / `HIGH` / `MEDIUM` / `LOW` / `NORMAL` / `UNCERTAIN`.
+- Color-coded by severity.
 
-Mobile-first breakpoints following Tailwind defaults (`sm:640`, `md:768`, `lg:1024`, `xl:1280`). Key patterns:
-- `font-size` scales: `text-4xl md:text-7xl lg:text-9xl`
-- Padding: `px-8 md:px-20`, `p-8 md:p-20`
-- Grid: `grid-cols-1 md:grid-cols-2 lg:grid-cols-4`
-- Navbar links shrink: `text-[8px] md:text-[10px]`
+### Case Flags
+
+- Reads `case_flags` array.
+- `"heatmap_only:{condition}"` flags are filtered from display (internal annotation).
+- Other flags rendered as small tag elements.
+
+### Report Field
+
+- `report` is always `null` in the current backend. Do not render a report panel.
 
 ---
 
-## 6. Animation System
+## 6. Route Map
 
-### GSAP Plugin Registration (`lib/gsap.ts`)
-
-```ts
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger, useGSAP);
-}
-
-export { gsap, ScrollTrigger };
-```
-
-**Critical rules:**
-- Plugin registration is guarded by `typeof window !== "undefined"` to prevent SSR crashes.
-- Plugins are **registered once here and nowhere else**. Registering in individual components causes duplication bugs.
-- Every component imports `gsap` and `ScrollTrigger` from `@/lib/gsap`, never directly from `gsap`.
-- `useGSAP` is imported from `@gsap/react` — not from this file — but it is *registered* here.
-
-### Lenis Smooth Scroll (`lib/lenis.ts` + `components/layout/LenisProvider.tsx`)
-
-`lib/lenis.ts` exports `useLenis()` — a React hook (client-side only):
-- Creates a `Lenis` instance with `duration: 1.2`, custom easing, `smoothWheel: true`.
-- Syncs Lenis to GSAP's ticker: `gsap.ticker.add((time) => instance.raf(time * 1000))`.
-- Disables lag smoothing: `gsap.ticker.lagSmoothing(0)` — required for frame-perfect sync.
-- Cleanup: calls `instance.destroy()` and removes the ticker function on unmount.
-
-`LenisProvider` (`"use client"`) simply calls `useLenis()` and renders `<>{children}</>`. It is placed in `app/layout.tsx` wrapping all page content.
-
-> **Known gotcha with Lenis cleanup:** The `gsap.ticker.remove()` call in the cleanup passes a new arrow function, not the same reference that was added. This means the ticker callback is **not actually removed** on unmount. This is a known bug. In practice it causes no visible issues because the Lenis instance is destroyed (`instance.destroy()`), so the raf calls become no-ops. If you refactor, extract the ticker function to a variable to fix this properly.
-
-### `useGSAP` Pattern
-
-Every component that runs GSAP animations uses `useGSAP` from `@gsap/react`. This hook:
-- Accepts an `{ scope }` option — pass a `ref` to scope all selector-based animations to that element only.
-- Returns a context that is automatically reverted on unmount (no manual `ctx.revert()` needed).
-- Is SSR-safe — it is equivalent to `useLayoutEffect` server-side.
-
-**Pattern used throughout:**
-```tsx
-const containerRef = useRef<HTMLDivElement>(null);
-
-useGSAP(() => {
-  const mm = gsap.matchMedia();
-  mm.add("(prefers-reduced-motion: no-preference)", () => {
-    // All animations here
-  });
-  mm.add("(prefers-reduced-motion: reduce)", () => {
-    // Instant/static fallbacks here
-  });
-}, { scope: containerRef });
-```
-
-### `prefers-reduced-motion` Handling
-
-**Implemented in:** `Hero.tsx`, `Features.tsx`, `Protocol.tsx`.
-
-Pattern: `gsap.matchMedia()` with two branches — one for full motion, one for instant/static state. The reduced-motion branch uses `gsap.set()` to immediately place elements in their final state without transitions.
-
-**Not yet implemented in:** `Philosophy.tsx`, `Navbar.tsx`, `PageTransition.tsx`. These still run animations unconditionally. Future agents should add `matchMedia` guards to these.
-
-### Hero Animation (`components/sections/Hero.tsx`)
-
-The hero is a cinematic "opening shot" sequence using a GSAP timeline:
-
-**Images:** An array of 5 images (4 Unsplash URLs + 1 local `/images/philo.jpg`) are stacked absolutely with `zIndex` ascending. Each starts with `clipPath: "inset(0% 0% 100% 0%)"` (hidden below).
-
-**Timeline sequence:**
-1. **Image reveal** (`delay: 0.35`, `stagger: 0.25`): Each image reveals top-to-bottom by animating `clipPath` to `inset(0% 0% 0% 0%)`. Uses `power1.out` ease.
-2. **Container expand**: The initially-small container (`w-[min(88vw,28rem)]`, `aspect-video`) expands to `100%` width, `100dvh` height, removing aspect ratio constraint. Uses `power3.inOut`.
-3. **Fade in**: `radialRef`, `contentRef`, `logoRef` fade from `opacity: 0` to `1` with stagger `0.1`. Uses `power2.out`.
-4. **Headline reveal**: Elements with `.line-reveal` class animate from `y: 50, opacity: 0` to `y: 0, opacity: 1` with stagger `0.1`. Uses `power3.out`.
-
-**`INTRO_END_DELAY_SEC`** is a calculated export: `0.35 + (IMAGES.length - 1) * 0.25 + 1 + 1`. This is the total duration of the intro animation sequence in seconds. It is exported but currently not consumed elsewhere — reserved for future use (e.g., delaying other section animations until the hero completes).
-
-**CTA logic:** The hero's "Init Core" / "Interface" button calls `handleCoreClick`, which navigates to `/auth/signin` or `/dashboard` depending on Zustand auth state, using `usePageTransition().navigateTo()`.
-
-**Known issue:** The hero creates a Supabase client (`createClient()`) directly inside the component but never uses it. This is dead code — the auth state is read from Zustand. Safe to remove.
-
-### Features Section (`components/sections/Features.tsx`)
-
-Three full-screen sections with a **stacked card scroll effect:**
-
-- Cards 2 and 3 start rotated `30deg` (transform-origin: `bottom left`).
-- As each card scrolls into view, it rotates back to `0deg` via `scrub: true` ScrollTrigger (`start: "top bottom"`, `end: "top 25%"`).
-- Cards 1 and 2 are **pinned** without spacing (`pin: true, pinSpacing: false`) — they stick in place as subsequent cards scroll over them.
-- Card 3 (last) is not pinned.
-
-**Navbar interaction:** The Navbar hides itself when the `#features` section is active (via `ScrollTrigger.create` in `Navbar.tsx`). The features container has `id="features"`.
-
-### Philosophy Section (`components/sections/Philosophy.tsx`)
-
-- ScrollTrigger on the container with `start: "top 60%"` and `toggleActions: "play none none reverse"`.
-- `text1Ref` (the neutral statement) fades up to `opacity: 0.5` — intentionally not full opacity.
-- `text2Ref` (the bold statement) fades up to `opacity: 1` starting `-0.6s` relative to text1.
-- Background: a local image (`/images/ppl.jpg`) at `opacity: 0.2`, grayscale. Does **not** use Next.js `<Image>` component — uses a plain `<img>` tag. This is the only instance where this rule is broken.
-
-### Protocol Section (`components/sections/Protocol.tsx`)
-
-Three full-screen cards that **pin and stack**. Each card is pinned from `"top top"` for a duration equal to `0.5 * window.innerHeight`. As the next card scrolls in, the previous card scales to `0.9`, blurs to `20px`, and fades to `0.5` (scrubbed).
-
-**Per-card SVG animations (always running, no matchMedia guard):**
-- **Card 01 — MotifAnimation:** Rotating gear/circle SVG. `gsap.to(ref, { rotation: 360, duration: 20, repeat: -1, ease: "none" })`.
-- **Card 02 — WaveformAnimation:** Three sine-wave SVG paths. Each path starts with `strokeDashoffset: 2000` and animates to `0` over `3-5s` with `repeat: -1`. Generates paths mathematically via `generatePath(offset)`.
-- **Card 03 — LaserAnimation:** A 10×10 dot grid + a scanning bar animated via `gsap.to(lineRef, { attr: { y1: 100, y2: 100 }, duration: 4, repeat: -1, yoyo: true })`.
-
-> **Known bug in LaserAnimation:** `lineRef` is assigned to two different elements simultaneously — both the `<rect>` scanning bar and the `<line>` laser core share the same ref. The `<rect>` (scanning bar) will be the ref's final value since it appears later in the JSX. The `<line>` never gets animated. This is a pre-existing bug.
-
-### Page Transitions (`components/layout/PageTransition.tsx`)
-
-A React Context-based system. Renders 6 dark gray (`#3b3b3b`) columns that cover the full viewport, positioned `fixed`, `z-index: 999`, `pointer-events: none`.
-
-**API:** `usePageTransition()` returns `{ navigateTo }`. All navigation in the app (Navbar, Hero buttons, auth redirects) uses `navigateTo(href)` — never `<Link>` or `router.push()` directly.
-
-**Exit transition (navigateTo called):**
-1. Sets all 6 columns to `y: "100%"` (below viewport).
-2. Animates columns to `y: "0%"` with `stagger: 0.05` (`power3.inOut`).
-3. On complete, calls `router.push(href)`.
-
-**Entrance transition (route change detected via `usePathname`):**
-1. Columns start at `y: "0%"` (covering screen).
-2. Animate to `y: "-100%"` (above viewport) with `stagger: 0.05` (`power3.inOut`).
-3. On complete, `isTransitioning.current = false`.
-
-**Guard:** `isTransitioning.current` prevents double-triggering while a transition is in progress.
-
-### Navbar Animations (`components/layout/Navbar.tsx`)
-
-Three `useGSAP` hooks:
-
-1. **Section visibility:** ScrollTrigger on `#features`. When active, hides navbar (`y: -100, opacity: 0`). When inactive, shows it (`y: 0, opacity: 1`). Runs on `pathname` dependency — re-creates trigger on route change.
-2. **Scroll morph:** On scroll past 50px, morphs nav to pill shape: `backgroundColor: rgba(0,0,0,0.6)`, `backdropFilter: blur(16px)`, `borderRadius: 9999px`, `y: 20`. Reverts on scroll back to top.
-3. **Navbar content:** Logo ("NEURO"), two nav links ("Services" → `/what-we-do`, "Solutions" → `/what-we-can-do`), and a conditional CTA ("Interface" → `/dashboard` if authenticated, "Init" → `/auth/signin` if not).
+| Route | File | Protected | Purpose |
+|---|---|---|---|
+| `/` | `app/page.tsx` | No | Landing page. |
+| `/what-we-can-do` | `app/what-we-can-do/page.tsx` | No | Public marketing/capabilities page. |
+| `/performance` | `app/performance/page.tsx` | No | Additional public page. |
+| `/auth/signin` | `app/auth/signin/page.tsx` | No (redirects if authed) | Sign-in form. |
+| `/auth/signup` | `app/auth/signup/page.tsx` | No (redirects if authed) | Sign-up form. |
+| `/auth/callback` | `app/auth/callback/route.ts` | No | Email confirmation code exchange. |
+| `/dashboard` | `app/dashboard/page.tsx` | **Yes** (middleware + client guard) | Main diagnostic UI. |
 
 ---
 
@@ -415,88 +245,91 @@ Three `useGSAP` hooks:
 
 ### Supabase Client Selection
 
-| File | Client Type | When to Use |
+| File | Type | When to Use |
 |---|---|---|
-| `lib/supabase/client.ts` | Browser client (`createBrowserClient`) | All client components (`"use client"`), event handlers, form submissions |
-| `lib/supabase/server.ts` | Server client (`createServerSupabaseClient`) | Server components, API routes, middleware (middleware has its own inline client) |
+| `lib/supabase/client.ts` | Browser (`createBrowserClient`) | All `"use client"` components, event handlers, form submissions |
+| `lib/supabase/server.ts` | Server (`createServerSupabaseClient`) | Server components, API routes |
 
-**Never use the server client in client components. Never use the browser client in server components.**
+**Never mix browser client into server components or vice versa.**
 
 ### Auth State Initialization (`components/layout/AuthInitializer.tsx`)
 
-This is a render-null client component mounted at root in `app/layout.tsx`. On mount it:
-1. Calls `supabase.auth.getSession()` to get any existing session and immediately syncs to Zustand.
-2. Subscribes to `supabase.auth.onAuthStateChange()` — any login/logout/token refresh event updates Zustand.
-3. Cleanup: calls `subscription.unsubscribe()` on unmount.
+Render-null client component mounted at root. On mount:
+1. Calls `supabase.auth.getSession()` → syncs immediately to Zustand.
+2. Subscribes to `supabase.auth.onAuthStateChange()` → keeps Zustand in sync on login/logout/refresh.
+3. Cleanup: `subscription.unsubscribe()` on unmount.
 
-**This is the only place Supabase auth events are subscribed to.** All other components read from Zustand via `useAuthStore()`.
+**This is the only place Supabase auth events are subscribed to.**
 
-### Sign-Up Flow (`app/auth/signup/page.tsx`)
+### Sign-Up (`app/auth/signup/page.tsx`)
 
-1. User fills email, password, confirmPassword.
-2. `react-hook-form` + `zodResolver(signUpSchema)` validates in real-time.
-3. `signUpSchema` requirements: `email` must be valid email; `password` min 6 chars (note: template says 8, actual code says **6**); `confirmPassword` must match `password`.
-4. On submit: `supabase.auth.signUp({ email, password, options: { emailRedirectTo: "${window.location.origin}/auth/callback" } })`.
-5. On success: shows "Check Your Email" confirmation state. **Does not auto-redirect.**
-6. On error: displays raw Supabase error message in a red alert box.
+1. `react-hook-form` + `zodResolver(signUpSchema)` validates: email, password (min 6), confirmPassword match.
+2. `supabase.auth.signUp({ email, password, options: { emailRedirectTo: "${origin}/auth/callback" } })`
+3. On success: shows "Check Your Email" confirmation state. No auto-redirect.
+4. On error: raw Supabase error in a red alert.
 
-### Email Confirmation Callback (`app/auth/callback/route.ts`)
+### Email Callback (`app/auth/callback/route.ts`)
 
-- `GET /auth/callback?code=<code>&next=<path>`
-- Exchanges `code` for session via `supabase.auth.exchangeCodeForSession(code)`.
-- On success: redirects to `next` param (defaults to `/dashboard`).
-- On failure: redirects to `/auth/signin?error=Could not authenticate user`.
+- `GET /auth/callback?code=<code>`
+- `supabase.auth.exchangeCodeForSession(code)` → redirect to `/dashboard`.
+- On failure → redirect to `/auth/signin?error=Could not authenticate user`.
 
-### Sign-In Flow (`app/auth/signin/page.tsx`)
+### Sign-In (`app/auth/signin/page.tsx`)
 
-1. User fills email, password.
-2. `react-hook-form` + `zodResolver(signInSchema)` validates.
-3. `signInSchema`: email valid, password non-empty.
-4. On submit: `supabase.auth.signInWithPassword({ email, password })`.
-5. On success: `router.push("/dashboard")` — direct push, not `navigateTo()` (bypasses page transition).
-6. On error: displays raw Supabase error message.
+1. `react-hook-form` + `zodResolver(signInSchema)` validates.
+2. `supabase.auth.signInWithPassword({ email, password })`
+3. On success: `router.push("/dashboard")` — **direct push, not `navigateTo()`** (intentional: bypasses GSAP transition).
 
 ### Sign-Out (`app/dashboard/page.tsx`)
 
-1. `supabase.auth.signOut()` — clears Supabase session.
-2. `router.push("/")` — redirects to landing.
-3. Zustand store updates automatically via `onAuthStateChange` in `AuthInitializer` (user set to `null`).
-
-### Session Persistence
-
-Supabase `@supabase/ssr` handles session persistence via cookies. The server client reads cookies from `next/headers`. The middleware client reads/writes request/response cookies directly. Token refresh happens automatically as part of the `createServerClient` cookie lifecycle.
+1. `supabase.auth.signOut()`
+2. `router.push("/")` — Zustand auto-updates via `onAuthStateChange`.
 
 ---
 
-## 8. State Management (Zustand)
+## 8. Route Protection
+
+### Layer 1: Middleware (`middleware.ts`)
+
+Runs on every non-static request. Uses an inline `createServerClient`.
+
+- Calls `supabase.auth.getUser()` (not `getSession()`) — validates JWT server-side.
+- `/dashboard*` without user → redirect to `/auth/signin`.
+- `/auth/*` with user → redirect to `/dashboard`.
+
+### Layer 2: Client Guard (`app/dashboard/layout.tsx`)
+
+Client component. Reads Zustand:
+- `isLoading: true` → shows centered spinner.
+- `user: null` (after loading) → `router.push("/auth/signin")`.
+- `user` exists → renders `children`.
+
+**Why both?** Middleware is the primary gate. Client guard prevents flash-of-content during Zustand hydration.
+
+---
+
+## 9. State Management (Zustand)
 
 ### `useAuthStore` (`lib/store.ts`)
 
 ```ts
 interface AuthState {
   user: User | null;      // Supabase User object or null
-  isLoading: boolean;     // true until AuthInitializer resolves the initial session
+  isLoading: boolean;     // true until AuthInitializer resolves initial session
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
 }
 ```
 
-**Default state:** `user: null, isLoading: true`. The `isLoading: true` default means any component that renders before `AuthInitializer` resolves will see a loading state — this is intentional.
+**Default state:** `user: null, isLoading: true`.
 
-**Consumers:**
-- `AuthInitializer` — writes to store.
-- `Navbar` — reads `user` to show "Interface" vs "Init" button.
-- `Hero` — reads `user` to determine CTA destination.
-- `DashboardLayout` — reads `user` and `isLoading` for client-side guard.
-- `DashboardPage` — reads `user` for email display.
+**Consumers:** `AuthInitializer` (writes), `Navbar` (reads user for CTA), dashboard layout guard, dashboard page (email display).
 
-**Nothing else lives in Zustand.** There is no UI state, routing state, or anything beyond auth in the store. If future features need global state, add new stores or extend this one with explicit actions.
+**Nothing else lives in Zustand.** Analysis results are local component state — they exist only for the browser session. No database persistence.
 
 ---
 
-## 9. Schema Validation (Zod)
-
-All schemas live in `lib/schemas.ts`. These are the only Zod schemas in the project.
+## 10. Schema Validation (Zod — `lib/schemas.ts`)
 
 ### `signUpSchema`
 
@@ -511,7 +344,7 @@ z.object({
 })
 ```
 
-> **Discrepancy:** The AGENTS.md template says `min(8)`, but the actual code enforces `min(6)`. This means a 6-7 character password is accepted by the form but may conflict with Supabase's own password policy (Supabase defaults to min 6, but this can be configured in the dashboard). Verify/align these.
+> **Note:** Enforces `min(6)`. Verify this aligns with the Supabase project's password policy (Supabase defaults to min 6, configurable in dashboard).
 
 ### `signInSchema`
 
@@ -529,309 +362,187 @@ export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 ```
 
-Both types are used as generics in `useForm<SignUpInput>` and `useForm<SignInInput>`.
+---
+
+## 11. Animation System
+
+### GSAP Plugin Registration (`lib/gsap.ts`)
+
+```ts
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
+
+export { gsap, ScrollTrigger };
+```
+
+**Rules:**
+- Guard with `typeof window !== "undefined"` — prevents SSR crashes.
+- **Register plugins here and nowhere else.** Registering in components causes duplication bugs.
+- Every component imports `gsap` and `ScrollTrigger` from `@/lib/gsap`, never from `gsap` directly.
+
+### Lenis Smooth Scroll
+
+`lib/lenis.ts` exports `useLenis()`:
+- Creates Lenis: `duration: 1.2`, custom easing, `smoothWheel: true`.
+- Syncs to GSAP ticker: `gsap.ticker.add((time) => instance.raf(time * 1000))`.
+- Disables lag smoothing: `gsap.ticker.lagSmoothing(0)`.
+- Cleanup: `instance.destroy()`.
+
+> **Known cleanup bug:** `gsap.ticker.remove()` is called with a new arrow function, not the original reference — the ticker callback is not actually removed. The Lenis instance is destroyed, making raf calls no-ops. Silent bug. Fix by extracting the callback to a named variable.
+
+### `useGSAP` Pattern
+
+```tsx
+const containerRef = useRef<HTMLDivElement>(null);
+
+useGSAP(() => {
+  const mm = gsap.matchMedia();
+  mm.add("(prefers-reduced-motion: no-preference)", () => {
+    // Animations here
+  });
+  mm.add("(prefers-reduced-motion: reduce)", () => {
+    // gsap.set() instant fallbacks here
+  });
+}, { scope: containerRef });
+```
+
+- Always pass `{ scope: containerRef }` — scopes selectors and enables auto-cleanup on unmount.
+- Never use raw `useEffect` for GSAP animations.
+
+### `prefers-reduced-motion`
+
+Implemented in: `Hero.tsx`, `Features.tsx`, `Protocol.tsx`.
+**Not yet implemented in:** `Philosophy.tsx`, `Navbar.tsx`, `PageTransition.tsx` — these animate unconditionally. Add `gsap.matchMedia()` guards when touching these files.
+
+### Page Transitions (`components/layout/PageTransition.tsx`)
+
+Renders 6 dark columns (fixed, z-999) as the transition curtain.
+
+**API:** `usePageTransition()` returns `{ navigateTo }`.
+
+- **Exit (navigateTo called):** columns slide up from below → `router.push(href)` on complete.
+- **Entrance (pathname change):** columns slide off above viewport.
+- **Guard:** `isTransitioning.current` prevents double-triggering.
+
+**All in-app navigation uses `navigateTo()`.** Exception: post-auth redirects in sign-in use `router.push()` directly — intentional.
 
 ---
 
-## 10. Route Protection
+## 12. Supabase Usage
 
-### Layer 1: Middleware (`middleware.ts`)
-
-Runs on **every request** (except `_next/static`, `_next/image`, favicon, and image files). Uses an inline `createServerClient` (not imported from `lib/supabase/server.ts`) with full cookie read/write/remove handlers.
-
-**Checks:** `await supabase.auth.getUser()` (not `getSession()` — `getUser()` validates the JWT against Supabase servers, more secure).
-
-**Redirects:**
-- `/dashboard*` without authenticated user → `/auth/signin`
-- `/auth/*` with authenticated user → `/dashboard`
-
-**Matcher pattern:** `"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"` — very broad, catches everything except static assets.
-
-### Layer 2: Client Guard (`app/dashboard/layout.tsx`)
-
-A client component that reads from Zustand:
-- While `isLoading: true` → shows a centered `<Loader2>` spinner.
-- After loading, if `user: null` → `router.push("/auth/signin")`.
-- If `user` exists → renders `children`.
-
-**Why both layers?** Middleware is the server-side primary gate. The client guard prevents flash-of-content while the Zustand store initializes on the client. Defense in depth.
-
----
-
-## 11. Backend / Supabase
-
-### Supabase Features Used
-
-| Feature | How Used |
+| Feature | Usage |
 |---|---|
-| **Auth** | Email/password sign-up with email confirmation. Sign-in. Sign-out. JWT session management via cookies. |
-| **Database** | Not used in the current codebase. No tables queried, no RLS policies defined here. |
+| **Auth** | Email/password sign-up + email confirmation. Sign-in. Sign-out. JWT session via cookies. |
+| **Database** | Not used. No tables queried. |
 | **Storage** | Not used. |
 | **Edge Functions** | Not used. |
 
-### Database Schema
-
-**No database schema is currently defined by this codebase.** The dashboard shows hardcoded mock data ("Neural Resonance: 98.2%", "AES-256", "0.14ms"). No Supabase database queries are made anywhere in the application.
-
-If a database is needed in future, the schema must be created in the Supabase dashboard with appropriate RLS policies. Use `lib/supabase/server.ts` for server-side queries.
-
-### Supabase Email Confirmation
-
-Sign-up sends a confirmation email. The `emailRedirectTo` is set to `${window.location.origin}/auth/callback`. The callback route (`app/auth/callback/route.ts`) handles code exchange. Ensure the Supabase dashboard's **Authentication → URL Configuration** has the correct site URL and redirect URLs configured.
+Analysis results are **not persisted**. They exist only in client-side component state for the current session.
 
 ---
 
-## 12. Component Inventory
-
-### `AuthInitializer` (`components/layout/AuthInitializer.tsx`)
-
-- **Renders:** Nothing (returns `null`).
-- **Props:** None.
-- **Animations:** None.
-- **Purpose:** Side-effect only. Initializes Zustand auth state from Supabase session. Must be the first child of `<body>` in the root layout.
-- **Gotcha:** Mounted outside `<LenisProvider>` and `<PageTransition>` — placement is intentional so auth state is ready before any navigation logic runs.
-
-### `LenisProvider` (`components/layout/LenisProvider.tsx`)
-
-- **Renders:** `<>{children}</>` (transparent wrapper).
-- **Props:** `{ children: ReactNode }`.
-- **Purpose:** Activates Lenis smooth scroll for the entire app.
-- **Gotcha:** Lenis is initialized in `useLenis()` inside `useEffect` — client-side only. The initial server render has no Lenis; it activates after hydration.
-
-### `PageTransition` (`components/layout/PageTransition.tsx`)
-
-- **Renders:** Children + 6 fixed `<div>` columns (the transition curtain).
-- **Props:** `{ children: ReactNode, column?: number }` (default `column = 6`).
-- **Exports:** `usePageTransition()` hook — returns `{ navigateTo: (href: string) => void }`.
-- **Animations:** GSAP animates 6 columns. Exit: columns slide up from below. Entrance: columns slide off above.
-- **Critical:** All in-app navigation MUST use `navigateTo()` from this hook. Using `<Link>` or `router.push()` directly bypasses the transition animation (sign-in page currently does this intentionally for the auth redirect, which is acceptable).
-
-### `Navbar` (`components/layout/Navbar.tsx`)
-
-- **Renders:** Fixed, horizontally-centered pill nav with logo, links, CTA.
-- **Props:** None.
-- **Animations:** Three `useGSAP` hooks (visibility, scroll morph, scroll hide/show).
-- **Gotcha:** The visibility ScrollTrigger depends on `#features` existing in the DOM. On pages without `#features` (all pages except `/`), the trigger is not created and `isHidden` stays `false`.
-
-### `Footer` (`components/layout/Footer.tsx`)
-
-- **Renders:** Minimal `<footer>` with copyright text.
-- **Props:** None.
-- **Animations:** None.
-- **Note:** Imports `usePageTransition` but does not use it — dead import. Safe to remove.
-
-### `Hero` (`components/sections/Hero.tsx`)
-
-- **Renders:** Full-screen (`h-screen`) hero with stacked image reveal + content overlay.
-- **Props:** None.
-- **Animations:** Full GSAP timeline on mount (see Section 6).
-- **Exports:** `INTRO_END_DELAY_SEC` — calculated animation duration. Not currently consumed.
-- **Gotcha:** Creates a Supabase client that is never used. Dead code.
-
-### `Features` (`components/sections/Features.tsx`)
-
-- **Renders:** Three full-screen `<section>` elements with a stacked-scroll reveal.
-- **Props:** None.
-- **Animations:** ScrollTrigger rotation + pinning (see Section 6).
-- **Container id:** `id="features"` — referenced by Navbar's ScrollTrigger.
-
-### `Philosophy` (`components/sections/Philosophy.tsx`)
-
-- **Renders:** Dark full-screen manifesto section with parallax background image.
-- **Props:** None.
-- **Animations:** ScrollTrigger fade-up on two text elements.
-- **Gotcha:** Uses `<img>` not `<Image>` for the background. The image is a local file (`/images/ppl.jpg`).
-- **Gotcha:** No `prefers-reduced-motion` guard. Animations run unconditionally.
-
-### `Protocol` (`components/sections/Protocol.tsx`)
-
-- **Renders:** Three full-screen cards with inline SVG animations.
-- **Props:** None.
-- **Animations:** Pinned stacking + three sub-animations (see Section 6).
-- **Gotcha:** `LaserAnimation` has a duplicate ref bug (see Section 6).
-
----
-
-## 13. Page Inventory
-
-| Route | File | Protected | Purpose |
-|---|---|---|---|
-| `/` | `app/page.tsx` | No | Landing page. Composes Hero + Features + Philosophy + Protocol. |
-| `/what-we-do` | `app/what-we-do/page.tsx` | No | Methodology page. Hero + 3 process cards. Linked from Navbar "Services". |
-| `/what-we-can-do` | `app/what-we-can-do/page.tsx` | No | Capabilities page. Hero + stat grid + detail text. Linked from Navbar "Solutions". |
-| `/auth/signin` | `app/auth/signin/page.tsx` | No (redirects to /dashboard if authed) | Sign-in form. |
-| `/auth/signup` | `app/auth/signup/page.tsx` | No (redirects to /dashboard if authed) | Sign-up form. |
-| `/auth/callback` | `app/auth/callback/route.ts` | No | API route. Handles email confirmation code exchange. |
-| `/dashboard` | `app/dashboard/page.tsx` | **Yes** (middleware + client guard) | System Terminal dashboard. User info + sign-out. |
-
-All pages except `/dashboard` inherit the root layout (Navbar, Footer, noise overlay, page transition). The `/auth/*` pages share `app/auth/layout.tsx` which adds a centered frosted-glass card wrapper.
-
----
-
-## 14. Known Constraints and Gotchas
+## 13. Known Issues and Gotchas
 
 ### 1. Lenis Ticker Cleanup Bug
-`lib/lenis.ts` cleanup function creates a new arrow function instead of removing the original reference. The Lenis instance is destroyed correctly, making this a silent bug. Fix: extract the ticker callback to a named variable before adding.
+`lib/lenis.ts` cleanup creates a new arrow function instead of removing the original reference. Silent — Lenis instance is destroyed correctly. Fix by naming the ticker callback.
 
-### 2. LaserAnimation Duplicate Ref
-In `Protocol.tsx`, `lineRef` is assigned to both the `<rect>` scanning bar and the `<line>` laser element. Only the last assignment (the `<line>`) takes effect. The scanning bar never animates. The `<rect>` should use a separate ref.
+### 2. `prefers-reduced-motion` Gaps
+`Philosophy.tsx`, `Navbar.tsx`, `PageTransition.tsx` animate without `gsap.matchMedia()` checks. Add guards when modifying these files.
 
-### 3. Dead Supabase Client in Hero
-`Hero.tsx` creates `const supabase = createClient()` but never calls any Supabase methods. Remove it.
+### 3. Sign-In Bypasses Page Transition
+`app/auth/signin/page.tsx` uses `router.push("/dashboard")` instead of `navigateTo("/dashboard")`. This is intentional — post-auth redirects skip the GSAP curtain. Keep this behavior unless explicitly changing the UX.
 
-### 4. Dead Import in Footer
-`Footer.tsx` imports `usePageTransition` but never uses `navigateTo`. Remove the import.
+### 4. Philosophy Uses `<img>` Not `<Image>`
+`Philosophy.tsx` uses a plain `<img>` for the background texture. Bypasses Next.js image optimization. Low-priority fix.
 
-### 5. Password Min Length Discrepancy
-`signUpSchema` enforces `min(6)`, not `min(8)` as documented in the original template. Decide on one value and align the schema and Supabase dashboard policy.
+### 5. `components/ui/` and `hooks/` are Empty
+Both directories exist as placeholders. No files inside them.
 
-### 6. Auth Redirect Bypasses Page Transition
-`app/auth/signin/page.tsx` uses `router.push("/dashboard")` (Next.js router) instead of `navigateTo("/dashboard")` (PageTransition). This is intentional — the transition plays before navigation for all regular in-app links, but post-auth redirects skip it. Keep this behavior or apply consistently.
+### 6. `next.config.ts` Allows Remote Images
+Configured to allow Unsplash remote image hostnames (used in Hero). Do not remove these without updating image sources.
 
-### 7. Philosophy Uses `<img>` Not `<Image>`
-`Philosophy.tsx` uses a plain `<img>` for `/images/ppl.jpg`. This bypasses Next.js image optimization. Low priority fix since it's a background texture.
-
-### 8. `prefers-reduced-motion` Not Everywhere
-`Philosophy.tsx`, `Navbar.tsx`, and `PageTransition.tsx` animate without checking `prefers-reduced-motion`. The Hero, Features, and Protocol sections do check it. Future agents must add `gsap.matchMedia()` guards to the unprotected components.
-
-### 9. Next.js `^16.2.6` Version
-The project targets what appears to be a pre-release or forward-looking Next.js version. Verify this is the correct version string and that the actual installed version in `node_modules` matches. Run `npm list next` to confirm.
-
-### 10. `components/ui/` and `hooks/` are Empty
-Both directories exist but contain no files. They are placeholders for future development.
-
-### 11. `.env.local` is in the Repository Directory
-The actual `.env.local` with real Supabase credentials exists in the project root. It is correctly gitignored. Do not commit it. When deploying, use the host's environment variable system (Vercel env vars, etc.) — never commit `.env.local`.
-
-### 12. `next.config.ts` Has No Source Maps Override
-Production source maps are not explicitly disabled in `next.config.ts`. By default, Next.js does not expose source maps in production builds, so this is acceptable. Do not add `productionBrowserSourceMaps: true`.
+### 7. `report` is Always `null`
+The backend always returns `"report": null`. Do not render a report panel in the dashboard — it is a Phase 2 backend feature.
 
 ---
 
-## 15. Skill Usage
-
-**Mandatory rule:** Before working in any domain, check `C:\Users\saran\.agents\skills` and read the relevant skill's `SKILL.md`. Skills encode hard-won, environment-specific knowledge that overrides training data.
-
-### Relevant Skills for This Project
-
-| Domain | Skill Directory |
-|---|---|
-| GSAP animations | `gsap-core/`, `gsap-react/`, `gsap-scrolltrigger/`, `gsap-plugins/`, `gsap-timeline/` |
-| Smooth scroll | `gsap-frameworks/` (Lenis integration) |
-| Next.js App Router | `nextjs-app-router-patterns/`, `next-best-practices/`, `nextjs-react-typescript/` |
-| Supabase auth | `supabase-postgres-best-practices/` |
-| Frontend design | `frontend-design/`, `ui-ux-pro-max/`, `high-end-visual-design/` |
-| Zustand | `zustand/` |
-
-> Do not write GSAP code before reading the gsap-react skill. Do not write Supabase queries before reading the supabase skill. Skills are non-negotiable.
-
----
-
-## 16. Extension Guide
-
-### Adding a New Public Page
-
-1. Create `app/your-route/page.tsx` as a client component.
-2. Follow the animation pattern from `what-we-do/page.tsx`: one `useRef`, `useGSAP` with `{ scope: ref }`, `gsap.matchMedia()` for motion preferences.
-3. Use `navigateTo("/your-route")` from `usePageTransition()` in any nav links pointing to this page. Add the link to `Navbar.tsx`'s `navLinks` array.
-4. No changes to middleware — public routes require no middleware config.
-
-### Adding a New Protected Route
-
-1. Create the route under `app/` with any path.
-2. Open `middleware.ts` and add the path to the `isProtectedPath` check:
-   ```ts
-   const isProtectedPath =
-     request.nextUrl.pathname.startsWith("/dashboard") ||
-     request.nextUrl.pathname.startsWith("/your-protected-path");
-   ```
-3. Create a layout that reads from Zustand and redirects if unauthenticated (copy `app/dashboard/layout.tsx`).
-
-### Adding a New Animation to an Existing Component
-
-1. Read the gsap-react skill first.
-2. Add a new `useRef` for the target element.
-3. Add animation logic inside the existing `useGSAP` call's `mm.add("(prefers-reduced-motion: no-preference)", ...)` block.
-4. Add a `gsap.set()` fallback in the `mm.add("(prefers-reduced-motion: reduce)", ...)` block.
-5. `useGSAP` with `{ scope }` handles cleanup automatically — no manual `ctx.revert()` needed.
-
-### Adding a New Supabase Table with RLS
-
-1. Open Supabase dashboard → SQL Editor.
-2. Create the table with appropriate columns.
-3. Enable RLS: `ALTER TABLE your_table ENABLE ROW LEVEL SECURITY;`
-4. Write policies:
-   ```sql
-   -- Users can only read their own rows
-   CREATE POLICY "user_read_own" ON your_table
-     FOR SELECT USING (auth.uid() = user_id);
-   -- Users can only insert their own rows
-   CREATE POLICY "user_insert_own" ON your_table
-     FOR INSERT WITH CHECK (auth.uid() = user_id);
-   ```
-5. In code, query using the server client (`lib/supabase/server.ts`) in Server Components or API routes. Use the browser client (`lib/supabase/client.ts`) in client event handlers.
-
-### Adding Global State Beyond Auth
-
-1. Either add new fields + actions to `useAuthStore` in `lib/store.ts`, or create a new Zustand store:
-   ```ts
-   // lib/uiStore.ts
-   import { create } from "zustand";
-   interface UIState {
-     isMobileMenuOpen: boolean;
-     toggleMobileMenu: () => void;
-   }
-   export const useUIStore = create<UIState>((set) => ({
-     isMobileMenuOpen: false,
-     toggleMobileMenu: () => set((s) => ({ isMobileMenuOpen: !s.isMobileMenuOpen })),
-   }));
-   ```
-2. Do not use React Context for state that Zustand can own.
-
-### Changing Brand Content
-
-All brand-specific content is hardcoded in the section components. There is no CMS or config file. To change copy:
-- **Hero headline:** `components/sections/Hero.tsx` lines 149-154.
-- **Hero CTA labels:** `Hero.tsx` line 161 (`user ? "Interface" : "Init Core"`).
-- **Features cards:** `components/sections/Features.tsx` `FEATURES` array.
-- **Philosophy statements:** `components/sections/Philosophy.tsx` lines 47-53.
-- **Protocol steps:** `components/sections/Protocol.tsx` `PROTOCOLS` array.
-- **Navbar links:** `components/layout/Navbar.tsx` `navLinks` array.
-- **Footer copyright:** `components/layout/Footer.tsx` line 8.
-- **Site metadata:** `app/layout.tsx` `metadata` object (title, description).
-
----
-
-## 17. Absolute Don'ts (Carry Forward)
-
-These rules must be respected in all future work on this codebase:
+## 14. Absolute Don'ts
 
 - ❌ **No Framer Motion.** GSAP is the only animation library.
 - ❌ **No per-component `.module.css` files.** `globals.css` is the only CSS file.
 - ❌ **No `@supabase/auth-helpers-nextjs`.** Use `@supabase/ssr` exclusively.
-- ❌ **No ScrollTrigger instances without cleanup.** `useGSAP` handles this automatically — do not switch to raw `useEffect` for GSAP.
+- ❌ **No ScrollTrigger instances without cleanup.** `useGSAP` with `{ scope }` handles this.
+- ❌ **No raw `useEffect` for GSAP animations.** Use `useGSAP`.
 - ❌ **No manual `requestAnimationFrame` alongside GSAP.** Use `gsap.ticker`.
-- ❌ **No client-side-only route protection.** Middleware (`middleware.ts`) is mandatory as the primary layer.
+- ❌ **No client-only route protection.** Middleware is the primary layer — never remove it.
 - ❌ **No hardcoded secrets.** Credentials go in `.env.local` only.
 - ❌ **No GSAP plugin registration in individual components.** Register only in `lib/gsap.ts`.
-- ❌ **No business logic inside GSAP animation callbacks.** Keep animations pure motion code.
-- ❌ **No skipping skills.** Read the relevant skill file before working in any covered domain.
+- ❌ **No `differential_top3`.** That field no longer exists. Use `confirmed_findings`.
+- ❌ **No persisting analysis results.** Results are session-only, no database writes.
 
 ---
 
-## 18. Final Verification Checklist
+## 15. Extension Guide
 
-Before considering any task done, verify:
+### Adding a Backend Field to the Dashboard
 
-- [ ] Lenis is synced to GSAP ticker and wraps the entire app
-- [ ] All GSAP animations use `useGSAP` with `{ scope }` — no raw `useEffect` for animations
-- [ ] `prefers-reduced-motion` is handled in every animated component
-- [ ] Sign-up form validates with `signUpSchema` and shows inline Zod errors per field
-- [ ] Sign-in form validates with `signInSchema` and shows inline Zod errors per field
+1. Check the root `AGENTS.md` Section 10 for the exact response shape.
+2. Update the TypeScript type/interface for the API response in the dashboard component.
+3. Render the new field. No backend changes needed if the field already exists in the response.
+
+### Adding a New Public Page
+
+1. Create `app/your-route/page.tsx`.
+2. Use `navigateTo("/your-route")` from `usePageTransition()` for any nav links.
+3. Add the link to `components/layout/Navbar.tsx` if needed.
+4. No middleware changes required for public routes.
+
+### Adding a New Protected Route
+
+1. Create the route under `app/`.
+2. In `middleware.ts`, add the path to the `isProtectedPath` check:
+   ```ts
+   request.nextUrl.pathname.startsWith("/your-protected-path")
+   ```
+3. Copy `app/dashboard/layout.tsx` for the client-side guard.
+
+### Adding a New Animation
+
+1. Add a `useRef` for the target element.
+2. Add animation logic inside the existing `useGSAP` → `mm.add("(prefers-reduced-motion: no-preference)", ...)` block.
+3. Add a `gsap.set()` fallback in the reduced-motion branch.
+4. `useGSAP` with `{ scope }` auto-reverts on unmount.
+
+### Adding Global State Beyond Auth
+
+Create a new Zustand store:
+```ts
+// lib/someStore.ts
+import { create } from "zustand";
+interface SomeState { /* ... */ }
+export const useSomeStore = create<SomeState>((set) => ({ /* ... */ }));
+```
+Do not use React Context for state that Zustand can own.
+
+---
+
+## 16. Final Verification Checklist
+
+Before considering any task complete:
+
+- [ ] Dashboard correctly reads `confirmed_findings` (not `differential_top3`)
+- [ ] Image viewer toggles correctly between Raw / Heatmap / Detection modes
+- [ ] `NEXT_PUBLIC_BACKEND_URL` is used for all backend fetch calls (no hardcoded localhost)
 - [ ] `/dashboard` is unreachable without a valid Supabase session (middleware + client guard both active)
+- [ ] All GSAP animations use `useGSAP` with `{ scope }` — no raw `useEffect` for animations
+- [ ] Lenis is synced to GSAP ticker and wraps all page content
+- [ ] Sign-up form validates with `signUpSchema`; sign-in with `signInSchema`
 - [ ] No per-component CSS files exist
-- [ ] `globals.css` contains only Tailwind directives, CSS variables, and the documented global utilities
-- [ ] All images except Philosophy background use Next.js `<Image>` component
-- [ ] All interactive elements have visible focus styles (`focus:ring-2 focus:ring-accent/50`)
-- [ ] Relevant skill files were read before starting work in their domain
-- [ ] No secrets are committed — `.env.local` is gitignored
+- [ ] `globals.css` contains only Tailwind directives, CSS variables, and documented global utilities
+- [ ] No secrets in source code — `.env.local` is gitignored
+- [ ] `report` field is not rendered (always `null`)
