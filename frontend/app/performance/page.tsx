@@ -34,14 +34,14 @@ const CHESTXDET_BENCHMARKS = [
   {
     title: "mAP@50 Benchmark",
     description:
-      "Comparison of Mean Average Precision at 50% IoU against the YOLO baseline. Our model demonstrates superior localization precision across anatomical findings.",
+      "Comparison of Mean Average Precision at 50% IoU against the Faster R-CNN baseline. Our model demonstrates superior localization precision across anatomical findings.",
     image: "/images/chestxdet/benchmark_ap50_vs_yolo.png",
     tag: "Metrics // 01",
   },
   {
     title: "Recall Benchmark",
     description:
-      "Analysis of recall performance at a fixed false positive rate (0.1) compared to YOLO benchmarks, ensuring high sensitivity for critical diagnostic detection.",
+      "Analysis of recall performance at a fixed false positive rate (0.1) compared to Faster R-CNN benchmarks, ensuring high sensitivity for critical diagnostic detection.",
     image: "/images/chestxdet/benchmark_recall_fp01_vs_yolo.png",
     tag: "Metrics // 02",
   },
