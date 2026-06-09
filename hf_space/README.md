@@ -1,17 +1,17 @@
 ---
-title: CheXVision Backend
+title: Neuro Backend
 emoji: 🫁
 colorFrom: blue
 colorTo: purple
 sdk: docker
 pinned: false
-license: mit
+license: Apache 2.0
 short_description: FastAPI backend for chest X-ray analysis (DenseNet + YOLOv8)
 ---
 
-# CheXVision — Backend API
+# Neuro — Backend API
 
-FastAPI backend for the CheXVision multimodal chest X-ray analysis system.
+FastAPI backend for the Neuro multimodal chest X-ray analysis system.
 
 ## Endpoints
 
