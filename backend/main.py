@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import uvicorn
 import logging
+import os
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -29,9 +30,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title='Chest X-Ray Diagnostic API', lifespan=lifespan)
 
 # Configure CORS
+# Set ALLOWED_ORIGINS env var in production (comma-separated list)
+# e.g., "https://your-app.vercel.app,http://localhost:3000"
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict this to your frontend origin in production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,7 +94,11 @@ async def predict(file: UploadFile = File(...)):
         
         # 4. Risk and Case Flags
         risk_level = get_risk_level(densenet_results['positive_conditions'])
-        case_flags = get_case_flags(densenet_results['positive_conditions'], yolo_results['kept_boxes'])
+        case_flags = get_case_flags(
+            densenet_results['positive_conditions'], 
+            yolo_results['kept_boxes'],
+            models_registry['overlap_classes']
+        )
         
         # 5. Build Final Response
         response = build_unified_response(
@@ -107,4 +117,5 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

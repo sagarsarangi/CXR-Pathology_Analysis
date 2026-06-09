@@ -66,7 +66,7 @@ def build_unified_response(densenet_results, yolo_results, risk_level, case_flag
         "yolo_boxes": yolo_results['kept_boxes'],
         "model_info": {
             "densenet_auc": mean_test_auc,
-            "yolo_map50": 0.34 # Hardcoded as per brief Section 3.3
+            "yolo_map50": 0.44 # v3 benchmark (imgsz=800, YOLOv8s, ChestX-Det)
         },
         "case_flags": case_flags,
         "report": None # Deferred as per Section 19

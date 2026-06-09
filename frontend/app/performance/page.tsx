@@ -10,47 +10,68 @@ const BENCHMARKS = [
   {
     title: "AUC-ROC Analysis",
     description:
-      "System-wide multi-label classification performance across 15 diagnostic categories. Demonstrating robust discriminatory power with a mean test AUC of 0.7687.",
-    image: "/images/benchmarks/auc-roc.png",
+      "System-wide multi-label classification performance across diagnostic categories. Demonstrating robust discriminatory power with a mean test AUC across conditions.",
+    image: "/images/nih/AUC_ROC.png",
     tag: "Metrics // 01",
   },
   {
     title: "Validation Benchmarks",
     description:
       "Real-time comparison of model validation AUC against established NIH baseline benchmarks. Consistent performance across tiered condition complexity.",
-    image: "/images/benchmarks/benchmark.png",
+    image: "/images/nih/Mean_val_auc_compare_benchmark.png",
     tag: "Metrics // 02",
   },
   {
-    title: "Class Distribution",
+    title: "Probability Overlap",
     description:
       "Statistical overlap analysis of positive and negative findings. Calibrated probability thresholds ensure clinical reliability and minimized uncertainty.",
-    image: "/images/benchmarks/overlap.png",
+    image: "/images/nih/Overlap.png",
     tag: "Metrics // 03",
   },
 ];
 
 const CHESTXDET_BENCHMARKS = [
   {
-    title: "F1 Curve Analysis",
+    title: "mAP@50 Benchmark",
     description:
-      "Global F1-score evaluation across object detection thresholds. Optimal balance of precision and recall for bounding box localization accuracy.",
-    image: "/images/benchmarks/f1-curve.png",
+      "Comparison of Mean Average Precision at 50% IoU against the YOLO baseline. Our model demonstrates superior localization precision across anatomical findings.",
+    image: "/images/chestxdet/benchmark_ap50_vs_yolo.png",
     tag: "Metrics // 01",
   },
   {
-    title: "PR Curve Benchmarks",
+    title: "Recall Benchmark",
     description:
-      "Precision-Recall trade-off visualization for diagnostic localization. Demonstrating high sensitivity in identifying anatomical abnormalities.",
-    image: "/images/benchmarks/pr-curve.png",
+      "Analysis of recall performance at a fixed false positive rate (0.1) compared to YOLO benchmarks, ensuring high sensitivity for critical diagnostic detection.",
+    image: "/images/chestxdet/benchmark_recall_fp01_vs_yolo.png",
     tag: "Metrics // 02",
+  },
+  {
+    title: "PR Curve Analysis",
+    description:
+      "Precision-Recall trade-off visualization, highlighting the model's ability to maintain high precision while maximizing clinical finding coverage.",
+    image: "/images/chestxdet/BoxPR_curve.png",
+    tag: "Metrics // 03",
+  },
+  {
+    title: "F1 Curve Evaluation",
+    description:
+      "F1-score evaluation across varied confidence thresholds, identifying the optimal operating point for balanced diagnostic accuracy.",
+    image: "/images/chestxdet/BoxF1_curve.png",
+    tag: "Metrics // 04",
   },
   {
     title: "Confusion Matrix",
     description:
-      "Normalized classification accuracy for localized findings. Robust discriminatory performance across targeted diagnostic categories.",
-    image: "/images/benchmarks/confusion-matrix.png",
-    tag: "Metrics // 03",
+      "Normalized classification performance for localized regions, validating the model's discriminatory power across specific abnormality classes.",
+    image: "/images/chestxdet/confusion_matrix_normalized.png",
+    tag: "Metrics // 05",
+  },
+  {
+    title: "Training Dynamics",
+    description:
+      "Optimization dynamics showing the convergence of localization and classification losses, ensuring robust and stable model performance.",
+    image: "/images/chestxdet/training_curves_v3.png",
+    tag: "Metrics // 06",
   },
 ];
 

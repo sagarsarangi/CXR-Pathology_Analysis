@@ -19,31 +19,47 @@ export default function Navbar() {
   const { navigateTo } = usePageTransition();
   const pathname = usePathname();
 
+  const lastScrollY = useRef(0);
+
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 50);
+
+      // Hide navbar on scroll down, show on scroll up
+      if (currentScrollY > 100) {
+        if (currentScrollY > lastScrollY.current) {
+          setIsHidden(true);
+        } else {
+          setIsHidden(false);
+        }
+      } else {
+        setIsHidden(false);
+      }
+      
+      lastScrollY.current = currentScrollY;
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useGSAP(() => {
+    // Existing logic for #features if present, but we keep isHidden controlled by scroll mostly
     const trigger = document.querySelector("#features");
-    if (!trigger) {
-      setIsHidden(false);
-      return;
-    }
+    if (!trigger) return;
 
-    // Section-based visibility
     const st = ScrollTrigger.create({
       trigger: "#features",
       start: "top 15%",
       end: "bottom 15%",
-      onToggle: (self) => setIsHidden(self.isActive),
+      onToggle: (self) => {
+        // Only force hide if we are in the features section and NOT scrolling up
+        // Actually, the user wants it to hide when scrolling down.
+        // Let's keep the scroll direction logic as primary.
+      },
     });
 
     ScrollTrigger.refresh();
-
     return () => st.kill();
   }, [pathname]);
 
@@ -91,30 +107,30 @@ export default function Navbar() {
     }
   }, [scrolled]);
 
-  const navLinks = [
-    { label: "Performance", href: "/performance" },
-    { label: "Solutions", href: "/what-we-can-do" },
-  ];
+  const navLinks = [{ label: "Performance", href: "/performance" }];
 
   return (
-    <div ref={outerRef} className="fixed top-0 inset-x-0 z-[100] flex justify-center pointer-events-none">
+    <div
+      ref={outerRef}
+      className="fixed top-0 inset-x-0 z-[100] flex justify-center pointer-events-none"
+    >
       <nav
         ref={navRef}
         className="flex items-center gap-4 md:gap-8 pointer-events-auto transition-all"
       >
-        <button 
-            onClick={() => navigateTo("/")}
-            className="font-mono text-lg md:text-xl tracking-tighter text-white font-bold hover:text-accent transition-colors shrink-0"
+        <button
+          onClick={() => navigateTo("/")}
+          className="font-mono text-lg md:text-xl tracking-tighter text-white font-bold hover:text-accent transition-colors shrink-0"
         >
           NEURO
         </button>
-        
+
         <div className="flex items-center gap-3 md:gap-6">
           {navLinks.map((link) => (
             <button
               key={link.href}
               onClick={() => navigateTo(link.href)}
-              className="text-[8px] md:text-[10px] font-mono uppercase tracking-widest text-white/60 hover:text-accent transition-colors whitespace-nowrap"
+              className="text-[8px] md:text-[10px] font-mono uppercase tracking-widest text-white hover:text-accent transition-colors whitespace-nowrap"
             >
               {link.label}
             </button>

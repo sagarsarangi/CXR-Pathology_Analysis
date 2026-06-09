@@ -33,7 +33,7 @@ const FEATURES = [
   {
     tag: "04 — NLP (Coming Soon)",
     title: "Automated Report\nSynthesis",
-    description: "The next phase of CheXVision: generating structured, clinical-grade radiology reports using advanced Large Language Models tailored for medical imaging.",
+    description: "The next phase of Neuro: generating structured, clinical-grade radiology reports using advanced Large Language Models tailored for medical imaging.",
     bg: "bg-[#111111]",
     text: "text-white",
     accent: "text-white",

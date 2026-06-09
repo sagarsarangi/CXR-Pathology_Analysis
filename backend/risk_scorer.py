@@ -38,7 +38,7 @@ def get_risk_level(positive_conditions):
             
     return 'UNCERTAIN'
 
-def get_case_flags(positive_conditions, kept_boxes):
+def get_case_flags(positive_conditions, kept_boxes, overlap_classes):
     """Generate diagnostic case flags based on Section 12."""
     flags = []
     
@@ -50,20 +50,13 @@ def get_case_flags(positive_conditions, kept_boxes):
     if not positive_conditions:
         flags.append("low_confidence_all")
         
-    # Per-condition "heatmap_only" flags (Section 12, Case 2/3)
-    # 10 Overlap classes as per Section 3.4
-    OVERLAP_CLASSES = {
-        'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Effusion',
-        'Emphysema', 'Fibrosis', 'Mass', 'Nodule', 'Pleural Thickening', 'Pneumothorax'
-    }
-    
     for cond in positive_conditions:
         if cond == "No Finding":
             continue
             
         # Normalize for comparison
         norm_cond = cond.replace('_', ' ')
-        if norm_cond not in OVERLAP_CLASSES:
+        if norm_cond not in overlap_classes:
             flags.append(f"heatmap_only:{cond}")
             
     return flags

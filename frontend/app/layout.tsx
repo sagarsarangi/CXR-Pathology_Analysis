@@ -26,7 +26,7 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "CheXVision",
+  title: "Neuro",
   description: "Understanding how AI revolutionizes the world.",
 };
 

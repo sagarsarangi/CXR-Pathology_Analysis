@@ -8,6 +8,7 @@ models/
 *.pt
 notebooks/
 *.ipynb
+chestxdet_drive/
 
 # --- Python / Backend ---
 __pycache__/
@@ -39,4 +40,5 @@ Desktop.ini
 MEMORY.md
 GEMINI.md
 AGENTS.md
+frontend/AGENTS.md
 FULL_PROJECT_BRIEF.md
