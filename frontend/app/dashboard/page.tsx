@@ -85,10 +85,7 @@ export default function DashboardPage() {
     }
   }, [selectedFile, results, isAnalyzing]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -147,14 +144,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-            <Brain className="text-accent h-8 w-8" />
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight flex items-center gap-2 md:gap-3">
+            <Brain className="text-accent h-6 w-6 md:h-8 md:w-8 shrink-0" /> 
             Neural Diagnostic Terminal
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
             {/* Backend status indicator */}
             <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full">
               <span className={cn(
@@ -163,7 +160,7 @@ export default function DashboardPage() {
                 backendReady ? "bg-green-400" : "bg-red-400"
               )} />
               <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">
-                {backendReady === null ? "Connecting..." : backendReady ? "Engine Ready" : "Backend Offline"}
+                {backendReady === null ? "Connecting..." : backendReady ? "Ready" : "Offline"}
               </span>
             </div>
             <button
@@ -172,13 +169,7 @@ export default function DashboardPage() {
             >
               Reset
             </button>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-6 py-2 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-full text-xs font-bold tracking-widest uppercase transition-all"
-            >
-              <LogOut className="h-4 w-4" />
-              Terminate
-            </button>
+
 
         </div>
       </div>
@@ -195,10 +186,10 @@ export default function DashboardPage() {
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className="group relative h-[500px] border-2 border-dashed border-white/10 hover:border-accent/40 rounded-container flex flex-col items-center justify-center transition-all cursor-pointer bg-surface/20 overflow-hidden"
+              className="group relative min-h-[400px] md:min-h-[500px] border-2 border-dashed border-white/10 hover:border-accent/40 rounded-container flex flex-col items-center justify-center transition-all cursor-pointer bg-surface/20 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center text-center px-8">
+              <div className="relative flex flex-col items-center text-center px-4 md:px-8">
                 <div className="w-16 h-16 rounded-full bg-accent/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Upload className="text-accent h-8 w-8" />
                 </div>
@@ -217,33 +208,20 @@ export default function DashboardPage() {
             </div>
           ) : (
             // Preview & Result Visualization
-            <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-container overflow-hidden p-6">
-              <div className="relative aspect-square md:aspect-auto md:h-[600px] bg-black/50 rounded-xl border border-white/5 flex items-center justify-center p-8 overflow-hidden">
+            <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-container overflow-hidden p-4 md:p-6">
+              <div className="relative aspect-square md:aspect-auto md:min-h-[600px] bg-black/50 rounded-xl border border-white/5 flex flex-col items-center justify-center p-4 md:p-8 overflow-hidden">
                 
                 {/* Layered Display */}
                 {results ? (
-                  <>
-                    <img 
-                      src={
-                        viewMode === "original" ? previewUrl : 
-                        viewMode === "heatmap" ? `data:image/jpeg;base64,${results.images.heatmap_b64}` :
-                        `data:image/jpeg;base64,${results.images.boxes_b64}`
-                      } 
-                      className="w-full h-full object-contain shadow-2xl"
-                      alt="Diagnostic view"
-                    />
-                    
-                    {/* View Controls */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-full p-1 p-x-2">
-                        <ViewBtn active={viewMode === "original"} onClick={() => setViewMode("original")} label="Raw" icon={<Eye className="h-3 w-3" />} />
-                        {Object.keys(results.images.individual_heatmaps).length > 0 && (
-                          <ViewBtn active={viewMode === "heatmap"} onClick={() => setViewMode("heatmap")} label="Heatmap" icon={<Brain className="h-3 w-3" />} />
-                        )}
-                        {results.yolo_boxes.length > 0 && (
-                          <ViewBtn active={viewMode === "boxes"} onClick={() => setViewMode("boxes")} label="Detection" icon={<Crosshair className="h-3 w-3" />} />
-                        )}
-                    </div>
-                  </>
+                  <img 
+                    src={
+                      viewMode === "original" ? previewUrl : 
+                      viewMode === "heatmap" ? `data:image/jpeg;base64,${results.images.heatmap_b64}` :
+                      `data:image/jpeg;base64,${results.images.boxes_b64}`
+                    } 
+                    className="w-full h-full object-contain shadow-2xl"
+                    alt="Diagnostic view"
+                  />
                 ) : (
                   <img src={previewUrl} className="w-full h-full object-contain opacity-50" alt="Preview" />
                 )}
@@ -256,6 +234,19 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
+
+              {/* View Controls Moved Outside */}
+              {results && (
+                <div className="flex flex-wrap justify-center items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-full p-2 px-4 w-fit mx-auto mt-4">
+                    <ViewBtn active={viewMode === "original"} onClick={() => setViewMode("original")} label="Raw" icon={<Eye className="h-3 w-3" />} />
+                    {Object.keys(results.images.individual_heatmaps).length > 0 && (
+                      <ViewBtn active={viewMode === "heatmap"} onClick={() => setViewMode("heatmap")} label="Heatmap" icon={<Brain className="h-3 w-3" />} />
+                    )}
+                    {results.yolo_boxes.length > 0 && (
+                      <ViewBtn active={viewMode === "boxes"} onClick={() => setViewMode("boxes")} label="Detection" icon={<Crosshair className="h-3 w-3" />} />
+                    )}
+                </div>
+              )}
             </div>
           )}
 
@@ -287,7 +278,7 @@ export default function DashboardPage() {
               {/* Risk Level Badge */}
               {results && (
                 <div className={cn(
-                  "p-6 rounded-container border transition-all",
+                  "p-4 md:p-6 rounded-container border transition-all flex flex-col justify-center",
                   results.risk_level === "CRITICAL" ? "bg-red-500/10 border-red-500/20" :
                   results.risk_level === "HIGH" ? "bg-orange-500/10 border-orange-500/20" :
                   results.risk_level === "MEDIUM" ? "bg-yellow-500/10 border-yellow-500/20" :
@@ -320,7 +311,7 @@ export default function DashboardPage() {
               )}
 
               {/* Confirmed Findings */}
-              <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-container p-6 space-y-6">
+              <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-container p-4 md:p-6 space-y-4 md:space-y-6">
                 <h3 className="text-white font-bold flex items-center gap-2 text-sm uppercase tracking-widest">
                   <CheckCircle2 className="text-accent h-4 w-4" />
                   Confirmed Findings
@@ -367,7 +358,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Object Detection */}
-              <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-container p-6 space-y-6">
+              <div className="bg-surface/50 backdrop-blur-xl border border-white/5 rounded-container p-4 md:p-6 space-y-4 md:space-y-6">
                 <h3 className="text-white font-bold flex items-center gap-2 text-sm uppercase tracking-widest">
                   <Crosshair className="text-accent h-4 w-4" />
                   Object Detection
@@ -415,8 +406,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Session Info Footer */}
-      <div className="mt-20 pb-10">
-        <div className="w-full flex items-center justify-center px-8 py-4 bg-white/[0.02] border border-white/5 rounded-container backdrop-blur-sm">
+      <div className="mt-12 md:mt-20 pb-10">
+        <div className="w-full flex items-center justify-center px-4 md:px-8 py-4 bg-white/[0.02] border border-white/5 rounded-container backdrop-blur-sm">
           <p className="text-white/30 font-mono text-[10px] uppercase tracking-[0.2em]">
             // Operator: <span className="text-white/60 ml-2">{user?.email}</span>
           </p>
@@ -432,7 +423,7 @@ function ViewBtn({ active, onClick, label, icon }: { active: boolean, onClick: (
         <button 
             onClick={onClick}
             className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
+                "flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap",
                 active ? "bg-accent text-primary" : "text-white/40 hover:text-white/70"
             )}
         >

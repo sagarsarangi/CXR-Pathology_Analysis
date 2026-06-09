@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-primary pt-32 pb-20 px-8 md:px-20">
+    <div className="min-h-screen bg-primary pt-24 md:pt-32 pb-20 px-4 md:px-8 lg:px-20">
       <div className="max-w-7xl mx-auto">
         {children}
       </div>

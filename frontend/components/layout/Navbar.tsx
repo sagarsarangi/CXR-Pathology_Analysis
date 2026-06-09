@@ -139,12 +139,25 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
           {user ? (
-            <button
-              onClick={() => navigateTo("/dashboard")}
-              className="px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform"
-            >
-              Interface
-            </button>
+            pathname === "/dashboard" ? (
+              <button
+                onClick={async () => {
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  navigateTo("/");
+                }}
+                className="px-4 md:px-6 py-2 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase transition-all"
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={() => navigateTo("/dashboard")}
+                className="px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform"
+              >
+                Interface
+              </button>
+            )
           ) : (
             <button
               onClick={() => navigateTo("/auth/signin")}
