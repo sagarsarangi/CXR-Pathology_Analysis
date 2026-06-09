@@ -5,7 +5,7 @@ colorFrom: blue
 colorTo: purple
 sdk: docker
 pinned: false
-license: Apache 2.0
+license: apache-2.0
 short_description: FastAPI backend for chest X-ray analysis (DenseNet + YOLOv8)
 ---
 
