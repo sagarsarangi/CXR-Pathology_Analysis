@@ -1,0 +1,57 @@
+name: Deploy Backend to Hugging Face Spaces
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    # Only run this automation if changes were actually made to backend-related files
+    paths:
+      - 'backend/**'
+      - 'models/**'
+      - 'hf_space/**'
+      - '.github/workflows/deploy-hf.yml'
+
+jobs:
+  deploy-to-hf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup Deployment Structure
+        run: |
+          mkdir hf_deployment
+          
+          # Copy deployment blueprints (Dockerfile, requirements.txt) to the root of our deployment folder
+          cp -a hf_space/. hf_deployment/
+          
+          # Copy backend code
+          cp -r backend/ hf_deployment/
+          
+          # Copy model weights
+          cp -r models/ hf_deployment/
+          
+      - name: Push to Hugging Face
+        run: |
+          cd hf_deployment
+          
+          # Initialize a fresh git repository inside the compiled folder
+          git init -b main
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions Automation"
+          
+          # Ensure large files are handled properly
+          git lfs install
+          
+          # Add the Hugging Face remote using the Secret token
+          git remote add space https://sagarsarangi26:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/sagarsarangi26/neuro
+          
+          # Stage and commit the compiled files
+          git add .
+          git commit -m "Auto-deployed backend from GitHub Actions (Commit: ${{ github.sha }})"
+          
+          # Force push to completely sync the Hugging Face Space with our compiled folder
+          git push --force space main:main
