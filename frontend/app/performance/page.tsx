@@ -134,6 +134,7 @@ export default function Performance() {
             src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
             alt="Medical Benchmarks"
             fill
+            sizes="100vw"
             priority
             className="object-cover opacity-30 grayscale"
           />
@@ -170,7 +171,7 @@ export default function Performance() {
           {BENCHMARKS.map((item, i) => (
             <div
               key={i}
-              className="metric-card fade-up group relative bg-[#121212] border border-white/10 rounded-[2.5rem] overflow-hidden hover:bg-[#1a1a1a] transition-all duration-500 hover:border-accent/30 shadow-2xl"
+              className="metric-card fade-up group relative bg-[#121212] border border-white/10 rounded-[2.5rem] overflow-hidden hover:bg-[#1a1a1a] transition-colors duration-500 hover:border-accent/30 shadow-2xl"
             >
               {/* Image Container - CLICKABLE */}
               <button
@@ -184,6 +185,7 @@ export default function Performance() {
                     src={item.image}
                     alt={item.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-contain transition-transform duration-700 group-hover:scale-[1.05]"
                   />
                 </div>
@@ -236,7 +238,7 @@ export default function Performance() {
           {CHESTXDET_BENCHMARKS.map((item, i) => (
             <div
               key={i}
-              className="metric-card fade-up group relative bg-[#121212] border border-white/10 rounded-[2.5rem] overflow-hidden hover:bg-[#1a1a1a] transition-all duration-500 hover:border-accent/30 shadow-2xl"
+              className="metric-card fade-up group relative bg-[#121212] border border-white/10 rounded-[2.5rem] overflow-hidden hover:bg-[#1a1a1a] transition-colors duration-500 hover:border-accent/30 shadow-2xl"
             >
               {/* Image Container - CLICKABLE */}
               <button
@@ -250,6 +252,7 @@ export default function Performance() {
                     src={item.image}
                     alt={item.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-contain transition-transform duration-700 group-hover:scale-[1.05]"
                   />
                 </div>
@@ -307,6 +310,7 @@ export default function Performance() {
                 src={selectedImage.src}
                 alt={selectedImage.title}
                 fill
+                sizes="100vw"
                 className="object-contain"
               />
             </div>

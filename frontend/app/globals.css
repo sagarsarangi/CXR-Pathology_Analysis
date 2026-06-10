@@ -47,5 +47,5 @@ body {
 
 /* Magnetic button effect placeholder (logic in GSAP) */
 .btn-magnetic {
-  @apply relative overflow-hidden transition-transform duration-300;
+  @apply relative overflow-hidden;
 }

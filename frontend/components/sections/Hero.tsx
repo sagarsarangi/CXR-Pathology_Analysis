@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useAuthStore } from "@/lib/store";
 import { usePageTransition } from "@/components/layout/PageTransition";
 import { createClient } from "@/lib/supabase/client";
+import { ChevronDown } from "lucide-react";
 
 export default function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,12 +40,43 @@ export default function Hero() {
     }
   };
 
+  useEffect(() => {
+    // Prevent browser from restoring scroll position on reload
+    if ("scrollRestoration" in history) {
+      history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+    
+    // Lock lenis globally before it potentially mounts
+    (window as any).lenisLocked = true;
+    if ((window as any).lenis) (window as any).lenis.stop();
+
+    return () => {
+      // Ensure scroll is unlocked when component unmounts
+      document.body.style.overflow = "";
+      (window as any).lenisLocked = false;
+      if ((window as any).lenis) (window as any).lenis.start();
+    };
+  }, []);
+
   useGSAP(() => {
     const mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
         const imgs = imgRefs.current.filter(Boolean);
-        const tl = gsap.timeline();
+        const tl = gsap.timeline({
+          onStart: () => {
+            document.body.style.overflow = "hidden";
+            (window as any).lenisLocked = true;
+            if ((window as any).lenis) (window as any).lenis.stop();
+            window.scrollTo(0, 0);
+          },
+          onComplete: () => {
+            document.body.style.overflow = "";
+            (window as any).lenisLocked = false;
+            if ((window as any).lenis) (window as any).lenis.start();
+          }
+        });
 
         // Entrance: staggered image reveal
         tl.to(imgs, {
@@ -65,9 +97,9 @@ export default function Hero() {
           ease: "power3.inOut",
         });
 
-        // Fade in radial gradient and content
+        // Reveal background radial and logo
         tl.to(
-          [radialRef.current, contentRef.current, logoRef.current],
+          [radialRef.current, logoRef.current],
           {
             opacity: 1,
             duration: 0.85,
@@ -77,14 +109,28 @@ export default function Hero() {
           ">"
         );
 
-        // Headline reveal (manual split logic for safety)
-        const headlineLines = contentRef.current?.querySelectorAll(".line-reveal");
-        if (headlineLines) {
-            tl.fromTo(headlineLines, 
-                { y: 50, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power3.out" },
-                "<0.3"
-            );
+        // Headline and buttons reveal
+        const revealedElements = contentRef.current?.querySelectorAll(".line-reveal");
+        if (revealedElements) {
+            tl.set(contentRef.current, { opacity: 1 }, "<");
+            
+            tl.to(revealedElements, {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power3.out"
+            }, "<0.2");
+        }
+
+        // Scroll indicator reveal
+        const scrollIndicator = contentRef.current?.querySelector(".scroll-indicator");
+        if (scrollIndicator) {
+            tl.to(scrollIndicator, {
+                opacity: 1,
+                duration: 0.5,
+                ease: "power2.out"
+            }, ">");
         }
     });
 
@@ -96,6 +142,8 @@ export default function Hero() {
         gsap.set(imgs, { clipPath: "inset(0% 0% 0% 0%)" });
         const headlineLines = contentRef.current?.querySelectorAll(".line-reveal");
         if (headlineLines) gsap.set(headlineLines, { y: 0, opacity: 1 });
+        const scrollIndicator = contentRef.current?.querySelector(".scroll-indicator");
+        if (scrollIndicator) gsap.set(scrollIndicator, { opacity: 1 });
     });
 
   }, { scope: containerRef });
@@ -126,7 +174,8 @@ export default function Hero() {
                 src={src}
                 alt=""
                 fill
-                priority={i === IMAGES.length - 1}
+                sizes="(max-width: 768px) 88vw, 42vw"
+                priority
                 className="object-cover"
                 style={{ clipPath: "inset(0% 0% 100% 0%)" }}
               />
@@ -149,31 +198,39 @@ export default function Hero() {
             className="absolute inset-0 z-20 flex flex-col justify-center p-8 md:p-20 opacity-0"
           >
             <div className="max-w-4xl space-y-4">
-              <p className="font-mono text-white/40 text-sm tracking-[0.3em] uppercase line-reveal">
+              <p className="font-mono text-white/40 text-sm tracking-[0.3em] uppercase line-reveal opacity-0 translate-y-8">
                 // Advanced Neural Chest X-Ray Analysis
               </p>
               <h1 className="text-white">
-                <span className="block text-4xl md:text-7xl font-bold tracking-tight line-reveal">
+                <span className="block text-4xl md:text-7xl font-bold tracking-tight line-reveal opacity-0 translate-y-8">
                   Clarity in Every
                 </span>
-                <span className="block text-6xl md:text-9xl font-drama italic text-white line-reveal mt-2">
+                <span className="block text-6xl md:text-9xl font-drama italic text-white line-reveal mt-2 opacity-0 translate-y-8">
                   Insight.
                 </span>
               </h1>
-              <div className="mt-8 flex flex-wrap gap-4 pt-9 line-reveal">
+              <div className="mt-8 flex flex-wrap gap-4 pt-9 line-reveal opacity-0 translate-y-8">
                 <button
                   onClick={handleCoreClick}
-                  className="btn-magnetic flex items-center justify-center whitespace-nowrap px-8 py-4 bg-accent text-black font-bold rounded-full text-sm tracking-widest uppercase hover:scale-105 transition-transform focus:ring-2 focus:ring-accent focus:outline-none pl-[2.1rem]"
+                  className="flex items-center justify-center whitespace-nowrap px-8 py-4 bg-accent text-black font-bold rounded-full text-sm tracking-widest uppercase hover:bg-accent/80 focus:ring-2 focus:ring-accent focus:outline-none pl-[2.1rem] min-w-[12rem]"
                 >
                   {user ? "Dashboard" : "Begin Analysis"}
                 </button>
                 <button 
                   onClick={() => window.open("https://www.instagram.com/your_username", "_blank")}
-                  className="flex items-center justify-center whitespace-nowrap px-8 py-4 bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold rounded-full text-sm tracking-widest uppercase hover:bg-white/35 hover:scale-105 transition-all focus:ring-2 focus:ring-white focus:outline-none pl-[2.1rem]"
+                  className="flex items-center justify-center whitespace-nowrap px-8 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-full text-sm tracking-widest uppercase hover:bg-white/20 focus:ring-2 focus:ring-white focus:outline-none pl-[2.1rem]"
               >
                   Connect
                 </button>
               </div>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 scroll-indicator">
+              <span className="text-[10px] font-mono tracking-[0.2em] text-white/50 uppercase">
+                Scroll to Explore
+              </span>
+              <ChevronDown className="w-4 h-4 text-white/50" />
             </div>
           </div>
         </div>

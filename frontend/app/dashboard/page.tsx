@@ -165,7 +165,7 @@ export default function DashboardPage() {
             </div>
             <button
               onClick={() => { setSelectedFile(null); setPreviewUrl(null); setResults(null); }}
-              className="flex items-center justify-center whitespace-nowrap px-6 py-2 bg-white/5 border border-white/10 text-white/60 hover:text-white rounded-full text-xs font-bold tracking-widest uppercase transition-all pl-[1.6rem]"
+              className="flex items-center justify-center whitespace-nowrap px-6 py-2 bg-white/5 border border-white/10 text-white/60 hover:text-white rounded-full text-xs font-bold tracking-widest uppercase transition-colors pl-[1.6rem]"
             >
               Reset
             </button>

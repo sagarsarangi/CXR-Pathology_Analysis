@@ -14,6 +14,13 @@ export function useLenis() {
       smoothWheel: true,
     });
 
+    // Expose globally to allow other components to pause/resume scrolling
+    (window as any).lenis = instance;
+
+    if ((window as any).lenisLocked) {
+      instance.stop();
+    }
+
     setLenis(instance);
 
     gsap.ticker.add((time) => {

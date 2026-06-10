@@ -13,11 +13,13 @@ import { createClient } from "@/lib/supabase/client";
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const pathname = usePathname();
+  // Delay navbar reveal on home page to sync with cinematic hero animation
+  const [isIntroDone, setIsIntroDone] = useState(pathname !== "/");
   const user = useAuthStore((state) => state.user);
   const navRef = useRef<HTMLDivElement>(null);
   const outerRef = useRef<HTMLDivElement>(null);
   const { navigateTo } = usePageTransition();
-  const pathname = usePathname();
 
   const lastScrollY = useRef(0);
 
@@ -49,8 +51,21 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Handle intro delay for home page
+  useEffect(() => {
+    if (pathname === "/") {
+      setIsIntroDone(false);
+      const timer = setTimeout(() => {
+        setIsIntroDone(true);
+      }, 2500); // 2.5s delay to match Hero's text reveal
+      return () => clearTimeout(timer);
+    } else {
+      setIsIntroDone(true);
+    }
+  }, [pathname]);
+
   useGSAP(() => {
-    if (isHidden) {
+    if (!isIntroDone || isHidden) {
       gsap.to(outerRef.current, {
         y: -100,
         opacity: 0,
@@ -62,12 +77,12 @@ export default function Navbar() {
       gsap.to(outerRef.current, {
         y: 0,
         opacity: 1,
-        duration: 0.5,
+        duration: 0.8, // Slightly longer smooth drop
         ease: "power3.out",
         overwrite: "auto",
       });
     }
-  }, [isHidden]);
+  }, [isHidden, isIntroDone]);
 
   useGSAP(() => {
     if (scrolled) {
@@ -103,6 +118,10 @@ export default function Navbar() {
     <div
       ref={outerRef}
       className="fixed top-0 inset-x-0 z-[100] flex justify-center pointer-events-none will-change-transform"
+      style={{ 
+        opacity: pathname === "/" && !isIntroDone ? 0 : undefined, 
+        transform: pathname === "/" && !isIntroDone ? 'translateY(-100px)' : undefined 
+      }}
     >
       <nav
         ref={navRef}
@@ -143,7 +162,7 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => navigateTo("/dashboard")}
-                className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform pl-[1.1rem] md:pl-[1.6rem]"
+                className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:bg-accent/80 transition-colors pl-[1.1rem] md:pl-[1.6rem]"
               >
                 Interface
               </button>
@@ -151,7 +170,7 @@ export default function Navbar() {
           ) : (
             <button
               onClick={() => navigateTo("/auth/signin")}
-              className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform pl-[1.1rem] md:pl-[1.6rem]"
+              className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:bg-accent/80 transition-colors pl-[1.1rem] md:pl-[1.6rem]"
             >
               Init
             </button>

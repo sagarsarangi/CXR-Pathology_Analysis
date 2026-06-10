@@ -149,12 +149,12 @@ export function SampleGallery({ onSelectImage }: SampleGalleryProps) {
                   <div 
                     key={idx}
                     onClick={() => handleSelect(img)}
-                    className="group relative aspect-square bg-black/40 rounded-2xl border border-white/5 overflow-hidden cursor-pointer hover:border-accent/40 transition-all hover:scale-[1.02]"
+                    className="group relative aspect-square bg-black/40 rounded-2xl border border-white/5 overflow-hidden cursor-pointer hover:border-accent/40 transition-colors hover:scale-[1.02]"
                   >
                     <img 
                       src={`/testing_images/${img}`} 
                       alt={img}
-                      className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500"
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
                       <p className="text-[8px] font-mono text-accent uppercase tracking-widest mb-0.5">Reference ID</p>
