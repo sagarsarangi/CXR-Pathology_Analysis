@@ -27,16 +27,16 @@ export default function Hero() {
   const radialRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
-  
+
   const user = useAuthStore((state) => state.user);
   const { navigateTo } = usePageTransition();
   const supabase = createClient();
 
   const handleCoreClick = async () => {
     if (user) {
-        navigateTo("/dashboard");
+      navigateTo("/dashboard");
     } else {
-        navigateTo("/auth/signin");
+      navigateTo("/auth/signin");
     }
   };
 
@@ -46,7 +46,7 @@ export default function Hero() {
       history.scrollRestoration = "manual";
     }
     window.scrollTo(0, 0);
-    
+
     // Lock lenis globally before it potentially mounts
     (window as any).lenisLocked = true;
     if ((window as any).lenis) (window as any).lenis.stop();
@@ -59,10 +59,11 @@ export default function Hero() {
     };
   }, []);
 
-  useGSAP(() => {
-    const mm = gsap.matchMedia();
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
         const imgs = imgRefs.current.filter(Boolean);
         const tl = gsap.timeline({
           onStart: () => {
@@ -75,7 +76,7 @@ export default function Hero() {
             document.body.style.overflow = "";
             (window as any).lenisLocked = false;
             if ((window as any).lenis) (window as any).lenis.start();
-          }
+          },
         });
 
         // Entrance: staggered image reveal
@@ -106,47 +107,68 @@ export default function Hero() {
             ease: "power2.out",
             stagger: 0.1,
           },
-          ">"
+          ">",
         );
 
         // Headline and buttons reveal
-        const revealedElements = contentRef.current?.querySelectorAll(".line-reveal");
+        const revealedElements =
+          contentRef.current?.querySelectorAll(".line-reveal");
         if (revealedElements) {
-            tl.set(contentRef.current, { opacity: 1 }, "<");
-            
-            tl.to(revealedElements, {
-                y: 0,
-                opacity: 1,
-                duration: 0.8,
-                stagger: 0.1,
-                ease: "power3.out"
-            }, "<0.2");
+          tl.set(contentRef.current, { opacity: 1 }, "<");
+
+          tl.to(
+            revealedElements,
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              stagger: 0.1,
+              ease: "power3.out",
+            },
+            "<0.2",
+          );
         }
 
         // Scroll indicator reveal
-        const scrollIndicator = contentRef.current?.querySelector(".scroll-indicator");
+        const scrollIndicator =
+          contentRef.current?.querySelector(".scroll-indicator");
         if (scrollIndicator) {
-            tl.to(scrollIndicator, {
-                opacity: 1,
-                duration: 0.5,
-                ease: "power2.out"
-            }, ">");
+          tl.to(
+            scrollIndicator,
+            {
+              opacity: 1,
+              duration: 0.5,
+              ease: "power2.out",
+            },
+            ">",
+          );
         }
-    });
+      });
 
-    // Fallback for reduced motion
-    mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set([radialRef.current, contentRef.current, logoRef.current], { opacity: 1 });
-        gsap.set(containerRef.current, { width: "100%", height: "100dvh", maxWidth: "none", aspectRatio: "unset", margin: 0 });
+      // Fallback for reduced motion
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        gsap.set([radialRef.current, contentRef.current, logoRef.current], {
+          opacity: 1,
+        });
+        gsap.set(containerRef.current, {
+          width: "100%",
+          height: "100dvh",
+          maxWidth: "none",
+          aspectRatio: "unset",
+          margin: 0,
+        });
         const imgs = imgRefs.current.filter(Boolean);
         gsap.set(imgs, { clipPath: "inset(0% 0% 0% 0%)" });
-        const headlineLines = contentRef.current?.querySelectorAll(".line-reveal");
+        const headlineLines =
+          contentRef.current?.querySelectorAll(".line-reveal");
         if (headlineLines) gsap.set(headlineLines, { y: 0, opacity: 1 });
-        const scrollIndicator = contentRef.current?.querySelector(".scroll-indicator");
+        const scrollIndicator =
+          contentRef.current?.querySelector(".scroll-indicator");
         if (scrollIndicator) gsap.set(scrollIndicator, { opacity: 1 });
-    });
-
-  }, { scope: containerRef });
+      });
+    },
+    { scope: containerRef },
+  );
 
   return (
     <section className="relative h-[100dvh] w-full overflow-hidden bg-primary">
@@ -216,10 +238,15 @@ export default function Hero() {
                 >
                   {user ? "Dashboard" : "Begin Analysis"}
                 </button>
-                <button 
-                  onClick={() => window.open("https://www.instagram.com/your_username", "_blank")}
+                <button
+                  onClick={() =>
+                    window.open(
+                      "https://www.linkedin.com/in/sagar-sarangi",
+                      "_blank",
+                    )
+                  }
                   className="flex items-center justify-center whitespace-nowrap px-8 py-4 bg-white/10 border border-white/20 text-white font-bold rounded-full text-sm tracking-widest uppercase hover:bg-white/20 focus:ring-2 focus:ring-white focus:outline-none pl-[2.1rem]"
-              >
+                >
                   Connect
                 </button>
               </div>
