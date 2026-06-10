@@ -101,7 +101,7 @@ export default function Hero() {
   }, { scope: containerRef });
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-primary">
+    <section className="relative h-[100dvh] w-full overflow-hidden bg-primary">
       {/* Logo Overlay */}
       {/* <div ref={logoRef} className="absolute top-8 left-8 z-50 opacity-0">
             <span className="font-mono text-xl tracking-tighter text-accent font-bold underline decoration-accent/30 underline-offset-4">NEURO</span>
@@ -160,16 +160,16 @@ export default function Hero() {
                   Insight.
                 </span>
               </h1>
-              <div className="mt-8 flex gap-4 pt-9 line-reveal">
+              <div className="mt-8 flex flex-wrap gap-4 pt-9 line-reveal">
                 <button
                   onClick={handleCoreClick}
-                  className="btn-magnetic px-8 py-4 bg-accent text-black font-bold rounded-full text-sm tracking-widest uppercase hover:scale-105 transition-transform focus:ring-2 focus:ring-accent focus:outline-none"
+                  className="btn-magnetic flex items-center justify-center whitespace-nowrap px-8 py-4 bg-accent text-black font-bold rounded-full text-sm tracking-widest uppercase hover:scale-105 transition-transform focus:ring-2 focus:ring-accent focus:outline-none pl-[2.1rem]"
                 >
                   {user ? "Dashboard" : "Begin Analysis"}
                 </button>
                 <button 
                   onClick={() => window.open("https://www.instagram.com/your_username", "_blank")}
-                  className="px-8 py-4 bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold rounded-full text-sm tracking-widest uppercase hover:bg-white/35 hover:scale-105 transition-all focus:ring-2 focus:ring-white focus:outline-none"
+                  className="flex items-center justify-center whitespace-nowrap px-8 py-4 bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold rounded-full text-sm tracking-widest uppercase hover:bg-white/35 hover:scale-105 transition-all focus:ring-2 focus:ring-white focus:outline-none pl-[2.1rem]"
               >
                   Connect
                 </button>

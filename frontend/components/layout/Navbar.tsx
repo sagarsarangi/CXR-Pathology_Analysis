@@ -130,7 +130,7 @@ export default function Navbar() {
             <button
               key={link.href}
               onClick={() => navigateTo(link.href)}
-              className="text-[8px] md:text-[10px] font-mono uppercase tracking-widest text-white hover:text-accent transition-colors whitespace-nowrap"
+              className="text-[11px] md:text-[10px] font-mono uppercase tracking-widest text-white hover:text-accent transition-colors whitespace-nowrap"
             >
               {link.label}
             </button>
@@ -146,14 +146,14 @@ export default function Navbar() {
                   await supabase.auth.signOut();
                   navigateTo("/");
                 }}
-                className="px-4 md:px-6 py-2 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase transition-all"
+                className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase transition-all pl-[1.1rem] md:pl-[1.6rem]"
               >
                 Logout
               </button>
             ) : (
               <button
                 onClick={() => navigateTo("/dashboard")}
-                className="px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform"
+                className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform pl-[1.1rem] md:pl-[1.6rem]"
               >
                 Interface
               </button>
@@ -161,7 +161,7 @@ export default function Navbar() {
           ) : (
             <button
               onClick={() => navigateTo("/auth/signin")}
-              className="px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform"
+              className="flex items-center justify-center whitespace-nowrap px-4 md:px-6 py-2 bg-accent text-black rounded-full text-[8px] md:text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform pl-[1.1rem] md:pl-[1.6rem]"
             >
               Init
             </button>
