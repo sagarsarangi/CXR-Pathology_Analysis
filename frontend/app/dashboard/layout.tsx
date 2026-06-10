@@ -7,13 +7,6 @@ import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuthStore();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/auth/signin");
-    }
-  }, [user, isLoading, router]);
 
   if (isLoading) {
     return (

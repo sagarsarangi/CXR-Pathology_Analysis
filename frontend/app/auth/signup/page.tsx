@@ -8,12 +8,13 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { usePageTransition } from "@/components/layout/PageTransition";
 
 export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const router = useRouter();
+  const { navigateTo } = usePageTransition();
   const supabase = createClient();
 
   const {
@@ -54,12 +55,12 @@ export default function SignUpPage() {
             We&apos;ve sent a confirmation link to your email address.
           </p>
         </div>
-        <Link
-          href="/auth/signin"
+        <button
+          onClick={() => navigateTo("/auth/signin")}
           className="inline-flex items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90"
         >
           Return to Sign In
-        </Link>
+        </button>
       </div>
     );
   }
@@ -135,9 +136,12 @@ export default function SignUpPage() {
 
       <div className="text-center text-sm text-white/50">
         Already have an account?{" "}
-        <Link href="/auth/signin" className="text-accent hover:underline">
+        <button 
+          onClick={() => navigateTo("/auth/signin")} 
+          className="text-accent hover:underline bg-transparent border-none p-0 cursor-pointer"
+        >
           Sign In
-        </Link>
+        </button>
       </div>
     </div>
   );

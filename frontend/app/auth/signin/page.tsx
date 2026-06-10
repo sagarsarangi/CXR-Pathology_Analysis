@@ -8,11 +8,12 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { usePageTransition } from "@/components/layout/PageTransition";
 
 export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const { navigateTo } = usePageTransition();
   const supabase = createClient();
 
   const {
@@ -36,7 +37,7 @@ export default function SignInPage() {
       setError(error.message);
       setIsLoading(false);
     } else {
-      router.push("/dashboard");
+      navigateTo("/dashboard");
     }
   };
 
@@ -96,9 +97,12 @@ export default function SignInPage() {
 
       <div className="text-center text-sm text-white/50">
         Don&apos;t have an account?{" "}
-        <Link href="/auth/signup" className="text-accent hover:underline">
+        <button 
+          onClick={() => navigateTo("/auth/signup")} 
+          className="text-accent hover:underline bg-transparent border-none p-0 cursor-pointer"
+        >
           Sign Up
-        </Link>
+        </button>
       </div>
     </div>
   );
