@@ -24,7 +24,13 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setScrolled(currentScrollY > 50);
+      
+      // Update scrolled state
+      if (currentScrollY > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
 
       // Hide navbar on scroll down, show on scroll up
       if (currentScrollY > 100) {
@@ -39,29 +45,9 @@ export default function Navbar() {
       
       lastScrollY.current = currentScrollY;
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useGSAP(() => {
-    // Existing logic for #features if present, but we keep isHidden controlled by scroll mostly
-    const trigger = document.querySelector("#features");
-    if (!trigger) return;
-
-    const st = ScrollTrigger.create({
-      trigger: "#features",
-      start: "top 15%",
-      end: "bottom 15%",
-      onToggle: (self) => {
-        // Only force hide if we are in the features section and NOT scrolling up
-        // Actually, the user wants it to hide when scrolling down.
-        // Let's keep the scroll direction logic as primary.
-      },
-    });
-
-    ScrollTrigger.refresh();
-    return () => st.kill();
-  }, [pathname]);
 
   useGSAP(() => {
     if (isHidden) {
@@ -70,6 +56,7 @@ export default function Navbar() {
         opacity: 0,
         duration: 0.5,
         ease: "power3.inOut",
+        overwrite: "auto",
       });
     } else {
       gsap.to(outerRef.current, {
@@ -77,6 +64,7 @@ export default function Navbar() {
         opacity: 1,
         duration: 0.5,
         ease: "power3.out",
+        overwrite: "auto",
       });
     }
   }, [isHidden]);
@@ -92,17 +80,19 @@ export default function Navbar() {
         border: "1px solid rgba(255, 255, 255, 0.1)",
         duration: 0.4,
         ease: "power2.out",
+        overwrite: "auto",
       });
     } else {
       gsap.to(navRef.current, {
         y: 0,
-        backgroundColor: "transparent",
+        backgroundColor: "rgba(0, 0, 0, 0)",
         backdropFilter: "blur(0px)",
         padding: "1.5rem 2rem",
         borderRadius: "0px",
         border: "1px solid rgba(255, 255, 255, 0)",
         duration: 0.4,
         ease: "power2.out",
+        overwrite: "auto",
       });
     }
   }, [scrolled]);
@@ -112,11 +102,11 @@ export default function Navbar() {
   return (
     <div
       ref={outerRef}
-      className="fixed top-0 inset-x-0 z-[100] flex justify-center pointer-events-none"
+      className="fixed top-0 inset-x-0 z-[100] flex justify-center pointer-events-none will-change-transform"
     >
       <nav
         ref={navRef}
-        className="flex items-center gap-4 md:gap-8 pointer-events-auto transition-all"
+        className="flex items-center gap-4 md:gap-8 pointer-events-auto will-change-transform"
       >
         <button
           onClick={() => navigateTo("/")}
