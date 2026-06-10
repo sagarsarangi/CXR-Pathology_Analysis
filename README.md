@@ -20,7 +20,7 @@ Neuro is a full-stack medical AI web application designed to analyze chest X-ray
 - **Multi-Label Classification**: Accurately detects 14 distinct chest conditions + "No Finding".
 - **Explainable AI**: Generates GradCAM attention heatmaps overlaid on the original image, ensuring full transparency in the model's decision-making process.
 - **Precise Localization**: Utilizes a fine-tuned YOLOv8s model to draw precise bounding boxes for detected abnormalities.
-- **Risk Assessment System**: Automatically categorizes clinical findings into actionable risk levels (CRITICAL, HIGH, MEDIUM, LOW, NORMAL).
+- **Risk Assessment System**: Automatically categorizes clinical findings into actionable risk levels (CRITICAL, HIGH, MEDIUM, LOW, NORMAL, UNCERTAIN).
 - **Clinical Reference Archive**: A built-in sample gallery of pre-loaded medical X-rays allowing users to test the inference engine instantly without uploading files.
 - **Advanced Diagnostic UI**: A three-way interactive view mode allowing the user to toggle between the **Raw Image**, **Heatmap (GradCAM)**, and **Detection (YOLOv8)** views.
 
