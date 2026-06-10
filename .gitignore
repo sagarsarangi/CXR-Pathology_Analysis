@@ -8,8 +8,6 @@ models/
 *.pt
 notebooks/
 *.ipynb
-chestxdet_drive/
-nih_drive/
 nih_test_result/
 chestxdet_test_result/
 
@@ -41,4 +39,6 @@ Desktop.ini
 .gemini/
 .agents/
 AGENTS.md
+CLAUDE.md
+GEMINI.md
 

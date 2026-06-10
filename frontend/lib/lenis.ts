@@ -23,17 +23,16 @@ export function useLenis() {
 
     setLenis(instance);
 
-    gsap.ticker.add((time) => {
+    const tick = (time: number) => {
       instance.raf(time * 1000);
-    });
+    };
 
+    gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       instance.destroy();
-      gsap.ticker.remove((time) => {
-        instance.raf(time * 1000);
-      });
+      gsap.ticker.remove(tick);
     };
   }, []);
 

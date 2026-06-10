@@ -1,7 +1,7 @@
 from .risk_scorer import RISK_MAP
 from .utils import numpy_to_b64, pil_to_numpy, normalize_label
 
-def build_unified_response(densenet_results, yolo_results, risk_level, case_flags, mean_test_auc, prob_thresholds):
+def build_unified_response(densenet_results, yolo_results, risk_level, case_flags, prob_thresholds, overlap_classes):
     """Assemble final JSON response for frontend (Section 11)."""
     
     # 1. Confirmed Findings (Positive conditions sorted by probability)
@@ -29,17 +29,13 @@ def build_unified_response(densenet_results, yolo_results, risk_level, case_flag
 
     # 2. Localization Type Mapping
     localization_type = {}
-    OVERLAP_CLASSES = {
-        'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Effusion',
-        'Emphysema', 'Fibrosis', 'Mass', 'Nodule', 'Pleural Thickening', 'Pneumothorax'
-    }
     
     for cond in densenet_results['positive_conditions']:
         if cond == "No Finding":
             continue
             
         norm_cond = normalize_label(cond)
-        if norm_cond in OVERLAP_CLASSES:
+        if norm_cond in overlap_classes:
             localization_type[cond] = "boxes_and_heatmap"
         else:
             localization_type[cond] = "heatmap_only"
@@ -64,10 +60,6 @@ def build_unified_response(densenet_results, yolo_results, risk_level, case_flag
             "individual_heatmaps": densenet_results['heatmaps']
         },
         "yolo_boxes": yolo_results['kept_boxes'],
-        "model_info": {
-            "densenet_auc": mean_test_auc,
-            "yolo_map50": 0.44 # v3 benchmark (imgsz=800, YOLOv8s, ChestX-Det)
-        },
         "case_flags": case_flags,
         "report": None # Deferred as per Section 19
     }

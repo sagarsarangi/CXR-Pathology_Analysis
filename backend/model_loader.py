@@ -68,7 +68,6 @@ def load_all_models(
     thresh_data = json.load(open(thresholds_path))
     prob_thresholds = thresh_data['probability_thresholds']
     cam_thresholds = thresh_data['cam_thresholds']
-    mean_test_auc = thresh_data.get('mean_test_auc', 0.0)
 
     # 3. Load YOLOv8 Detection Model
     yolo = YOLO(yolo_pt_path)
@@ -79,10 +78,10 @@ def load_all_models(
         'label_columns': label_cols,
         'prob_thresholds': prob_thresholds,
         'cam_thresholds': cam_thresholds,
-        'mean_test_auc': mean_test_auc,
         'yolo': yolo,
         'id_to_class': yolo_config['id_to_class'],
         'overlap_classes': set(yolo_config['overlap_classes']),
         'yolo_conf': yolo_config['conf_thresh'],
         'yolo_iou': yolo_config['iou_thresh'],
+        'yolo_imgsz': yolo_config.get('img_size_train', 800)
     }

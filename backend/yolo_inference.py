@@ -3,7 +3,7 @@ import numpy as np
 from .utils import pil_to_numpy, numpy_to_b64, normalize_label
 from .densenet_inference import CONDITION_COLORS_RGB
 
-def run_yolo_inference(yolo_model, original_img_pil, positive_conditions, id_to_class, overlap_classes, conf=0.15, iou=0.5):
+def run_yolo_inference(yolo_model, original_img_pil, positive_conditions, id_to_class, overlap_classes, conf, iou, imgsz):
     """Run YOLO detection filtered by NIH classification results (Section 8)."""
     
     # 1. Determine eligible classes for detection
@@ -22,10 +22,10 @@ def run_yolo_inference(yolo_model, original_img_pil, positive_conditions, id_to_
         }
 
     # 2. Run YOLO Inference
-    # YOLO handles resizing internally to 640
+    # YOLO handles resizing internally to imgsz
     results = yolo_model.predict(
         source=original_img_pil, 
-        imgsz=640, 
+        imgsz=imgsz, 
         conf=conf, 
         iou=iou, 
         verbose=False

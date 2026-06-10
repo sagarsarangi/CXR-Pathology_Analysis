@@ -5,6 +5,13 @@ import uvicorn
 import logging
 import os
 
+from .densenet_inference import run_densenet_inference
+from .yolo_inference import run_yolo_inference
+from .risk_scorer import get_risk_level, get_case_flags
+from .response_builder import build_unified_response
+from .utils import preprocess_image
+from .model_loader import load_all_models
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,7 +24,6 @@ async def lifespan(app: FastAPI):
     # Load all models at startup
     logger.info("Initializing models...")
     try:
-        from .model_loader import load_all_models
         models_registry.update(load_all_models())
         logger.info("All models loaded successfully.")
     except Exception as e:
@@ -61,12 +67,6 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File provided is not an image")
 
     try:
-        from .densenet_inference import run_densenet_inference
-        from .yolo_inference import run_yolo_inference
-        from .risk_scorer import get_risk_level, get_case_flags
-        from .response_builder import build_unified_response
-        from .utils import preprocess_image
-
         # 1. Read and preprocess image
         image_bytes = await file.read()
         img_tensor, original_img_pil = preprocess_image(image_bytes)
@@ -89,7 +89,8 @@ async def predict(file: UploadFile = File(...)):
             models_registry['id_to_class'],
             models_registry['overlap_classes'],
             models_registry['yolo_conf'],
-            models_registry['yolo_iou']
+            models_registry['yolo_iou'],
+            models_registry['yolo_imgsz']
         )
         
         # 4. Risk and Case Flags
@@ -106,8 +107,8 @@ async def predict(file: UploadFile = File(...)):
             yolo_results,
             risk_level,
             case_flags,
-            models_registry['mean_test_auc'],
-            models_registry['prob_thresholds']
+            models_registry['prob_thresholds'],
+            models_registry['overlap_classes']
         )
         
         return response

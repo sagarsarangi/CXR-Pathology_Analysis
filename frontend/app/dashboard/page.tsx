@@ -46,10 +46,6 @@ interface AnalysisResults {
     individual_heatmaps: Record<string, string>;
   };
   yolo_boxes: YoloBox[];
-  model_info: {
-    densenet_auc: number;
-    yolo_map50: number;
-  };
   case_flags: string[];
 }
 
