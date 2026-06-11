@@ -20,6 +20,7 @@ def build_unified_response(densenet_results, yolo_results, risk_level, case_flag
         confirmed_findings.append({
             "condition": cond,
             "prob": prob,
+            "threshold": threshold,
             "normalized_conf": round(normalized_conf, 4),
             "risk": RISK_MAP.get(cond, "LOW")
         })

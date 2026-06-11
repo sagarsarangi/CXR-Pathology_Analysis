@@ -21,6 +21,7 @@ interface Prediction {
 interface Finding {
   condition: string;
   prob: number;
+  threshold: number;
   normalized_conf: number;
   risk: string;
 }
@@ -329,12 +330,20 @@ export default function DashboardPage() {
                             <span className="text-white text-xs font-bold tracking-tight">
                               {idx + 1}. {item.condition.replace(/_/g, ' ')}
                             </span>
-                            <span className="text-accent text-[10px] font-mono">{(item.normalized_conf * 100).toFixed(1)}%</span>
+                            <span className="text-accent text-[10px] font-mono">{(item.prob * 100).toFixed(1)}%</span>
                           </div>
-                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div className="relative h-1 bg-white/5 rounded-full overflow-hidden">
                             <div 
-                              className="h-full bg-accent transition-all duration-1000 ease-out"
-                              style={{ width: `${item.normalized_conf * 100}%` }}
+                              className="absolute top-0 left-0 h-full bg-black/40 transition-all duration-1000 ease-out z-10"
+                              style={{ width: `${item.threshold * 100}%` }}
+                            />
+                            <div 
+                              className="absolute top-0 h-full w-[2px] bg-black/80 z-20"
+                              style={{ left: `${item.threshold * 100}%` }}
+                            />
+                            <div 
+                              className="absolute top-0 left-0 h-full bg-accent transition-all duration-1000 ease-out z-0"
+                              style={{ width: `${item.prob * 100}%` }}
                             />
                           </div>
                         </div>
@@ -344,8 +353,7 @@ export default function DashboardPage() {
                       <div className="pt-4 mt-4 border-t border-white/5 flex gap-2">
                         <Info className="h-3 w-3 text-white/20 shrink-0" />
                         <p className="text-[9px] leading-relaxed text-white/50 font-mono uppercase tracking-wider">
-                          Note: Confidence is normalized relative to clinical thresholds. 
-                          Display: (p - thresh) / (1 - thresh).
+                          Note: Displaying original model confidence. The grey overlay and marker denote the clinical threshold for a positive finding.
                         </p>
                       </div>
                     </>
