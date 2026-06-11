@@ -10,7 +10,7 @@ const IMAGES = [
   "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop", // Neon
   "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop", // Tech
   "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=2020&auto=format&fit=crop", // Circuit
-  "/images/philo.jpg", // Abstract
+  "/images/philo.avif", // Abstract
 ];
 
 export const INTRO_END_DELAY_SEC = 0.35 + (IMAGES.length - 1) * 0.25 + 1 + 1;
@@ -220,7 +220,7 @@ export default function Hero() {
             className="absolute inset-0 z-20 flex flex-col justify-center p-8 md:p-20 opacity-0"
           >
             <div className="max-w-4xl space-y-4">
-              <p className="font-mono text-white/40 text-sm tracking-[0.3em] uppercase line-reveal opacity-0 translate-y-8">
+              <p className="font-mono text-white/70 text-sm tracking-[0.3em] uppercase line-reveal opacity-0 translate-y-8">
                 // Advanced Neural Chest X-Ray Analysis
               </p>
               <h1 className="text-white">
