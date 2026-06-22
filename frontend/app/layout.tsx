@@ -4,6 +4,7 @@ import "./globals.css";
 import LenisProvider from "@/components/layout/LenisProvider";
 import AuthInitializer from "@/components/layout/AuthInitializer";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/next";
 
 const sora = Sora({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
             <Footer />
           </PageTransition>
         </LenisProvider>
+        <Analytics />
       </body>
     </html>
   );
