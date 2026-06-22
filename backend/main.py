@@ -49,6 +49,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get('/')
+def root():
+    return {"message": "Neuro Chest X-Ray API is live and completely loaded!"}
+
 @app.get('/health')
 def health():
     return {
