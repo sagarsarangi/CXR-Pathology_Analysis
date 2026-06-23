@@ -65,28 +65,59 @@ export default function DashboardPage() {
   const [backendReady, setBackendReady] = useState<boolean | null>(null); // null=checking, true=ready, false=unavailable
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // ── Backend wakeup: ping /health on mount to pre-warm the HF Space ───────
+  // ── Backend Health Check (Every 3s) ───────
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-    fetch(`${backendUrl}/health`, { method: "GET" })
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => setBackendReady(data.models_loaded === true))
-      .catch(() => setBackendReady(false));
+    
+    const checkHealth = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/health`, { method: "GET" });
+        if (res.ok) {
+          const data = await res.json();
+          setBackendReady(data.models_loaded === true);
+        } else {
+          setBackendReady(false);
+        }
+      } catch (err) {
+        setBackendReady(false);
+      }
+    };
+
+    checkHealth(); // initial
+    const intervalId = setInterval(checkHealth, 3000);
+
+    return () => clearInterval(intervalId);
   }, []);
+
+  // Cancel analysis if backend goes offline
+  useEffect(() => {
+    if (backendReady === false && isAnalyzing) {
+      abortControllerRef.current?.abort();
+      setIsAnalyzing(false);
+      setError("Backend connection lost during analysis. Please try again.");
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setResults(null);
+    }
+  }, [backendReady, isAnalyzing]);
 
   // Auto-run analysis when a file is selected
   useEffect(() => {
-    if (selectedFile && !results && !isAnalyzing) {
+    if (selectedFile && !results && !isAnalyzing && backendReady && !error) {
       runAnalysis();
     }
-  }, [selectedFile, results, isAnalyzing]);
+  }, [selectedFile, results, isAnalyzing, backendReady, error]);
 
 
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (isAnalyzing && abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
       setResults(null);
       setError(null);
       setSelectedFile(file);
@@ -99,6 +130,9 @@ export default function DashboardPage() {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      if (isAnalyzing && abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
       setResults(null);
       setError(null);
       setSelectedFile(file);
@@ -113,6 +147,8 @@ export default function DashboardPage() {
     setIsAnalyzing(true);
     setError(null);
 
+    abortControllerRef.current = new AbortController();
+
     const formData = new FormData();
     formData.append("file", selectedFile);
 
@@ -121,6 +157,7 @@ export default function DashboardPage() {
       const response = await fetch(`${backendUrl}/predict`, {
         method: "POST",
         body: formData,
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -132,14 +169,41 @@ export default function DashboardPage() {
       if (data.yolo_boxes.length > 0) setViewMode("boxes");
       else if (Object.keys(data.images.individual_heatmaps).length > 0) setViewMode("heatmap");
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred during analysis.");
+      if (err.name !== 'AbortError') {
+        setError(err.message || "An unexpected error occurred during analysis.");
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        setResults(null);
+      }
     } finally {
       setIsAnalyzing(false);
+      abortControllerRef.current = null;
     }
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 relative">
+      {/* Offline Modal */}
+      {backendReady === false && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 md:p-10 max-w-md w-full flex flex-col items-center text-center space-y-4 shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2 animate-pulse">
+              <AlertCircle className="text-red-500 h-8 w-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">System Offline</h2>
+            <p className="text-white/60 text-sm leading-relaxed">
+              The diagnostic backend is currently offline or loading models. Please wait for the system to come online to perform analysis.
+            </p>
+            <div className="mt-6 flex items-center gap-3 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full">
+              <Loader2 className="h-4 w-4 text-accent animate-spin" />
+              <span className="text-[10px] font-mono uppercase tracking-widest text-white/60">
+                Attempting Reconnection...
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
         <div>
@@ -161,7 +225,15 @@ export default function DashboardPage() {
               </span>
             </div>
             <button
-              onClick={() => { setSelectedFile(null); setPreviewUrl(null); setResults(null); }}
+              onClick={() => { 
+                if (isAnalyzing && abortControllerRef.current) {
+                  abortControllerRef.current.abort();
+                }
+                setSelectedFile(null); 
+                setPreviewUrl(null); 
+                setResults(null); 
+                setError(null);
+              }}
               className="flex items-center justify-center whitespace-nowrap px-6 py-2 bg-white/5 border border-white/10 text-white/60 hover:text-white rounded-full text-xs font-bold tracking-widest uppercase transition-colors pl-[1.6rem]"
             >
               Reset
@@ -262,17 +334,19 @@ export default function DashboardPage() {
         {/* Right: Results & Metrics */}
         <div className="lg:col-span-5 space-y-6">
           
-          {!results && !isAnalyzing ? (
-            <SampleGallery onSelectImage={(file) => {
-              setResults(null);
-              setError(null);
-              setSelectedFile(file);
-              const url = URL.createObjectURL(file);
-              setPreviewUrl(url);
-            }} />
-          ) : (
-            <>
-              {/* Risk Level Badge */}
+        <div className={!results && !isAnalyzing ? "block" : "hidden"}>
+          <SampleGallery onSelectImage={(file) => {
+            setResults(null);
+            setError(null);
+            setSelectedFile(file);
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
+          }} />
+        </div>
+
+        {(results || isAnalyzing) && (
+          <>
+            {/* Risk Level Badge */}
               {results && (
                 <div className={cn(
                   "p-4 md:p-6 rounded-container border transition-all flex flex-col justify-center",

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--max-old-space-size=4096' next dev",
+    "dev": "cross-env NODE_OPTIONS='--max-old-space-size=4096 --dns-result-order=ipv4first' next dev",
     "clean": "if exist .next (rd /s /q .next) && npm run dev",
     "build": "next build",
     "start": "next start",

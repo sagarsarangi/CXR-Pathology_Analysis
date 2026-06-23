@@ -51,6 +51,10 @@ export default function Hero() {
     (window as any).lenisLocked = true;
     if ((window as any).lenis) (window as any).lenis.stop();
 
+    // Pre-warm the backend (Hugging Face Space)
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+    fetch(`${backendUrl}/health`, { method: "GET" }).catch(() => {});
+
     return () => {
       // Ensure scroll is unlocked when component unmounts
       document.body.style.overflow = "";
