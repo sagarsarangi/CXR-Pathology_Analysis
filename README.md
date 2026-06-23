@@ -18,7 +18,7 @@
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
 **Live Link**: [https://neurochest.vercel.app/](https://neurochest.vercel.app/)<br>
-**Backend API**: [https://sagarsarangi26-neuro.hf.space](https://sagarsarangi26-neuro.hf.space)
+**Backend API**: [https://sagarsarangi26-neuro.hf.space](https://sagarsarangi26-neuro.hf.space/health)
 
 Neuro is a full-stack medical AI web application designed to analyze chest X-ray images, provide multi-label disease classification, and generate high-resolution localizations using a custom dual-model architecture.
 
